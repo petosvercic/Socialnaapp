@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Socialnaapp",
-  description: "Mood check-in MVP (deterministic scoring, no AI fairy dust).",
+  title: "Viora",
+  description: "Viora is a lightweight mood signal for you and your friends. Deterministic scoring, no AI theater.",
 };
 
 export default function RootLayout({
