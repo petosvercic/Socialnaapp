@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { AnswerMap, AnswerValue, Question } from "@/lib/mood/types";
+import type { AnswerMap, AnswerValue, CheckinResult, Question } from "@/lib/mood/types";
 import { sampleDay } from "@/lib/mood/sample-day";
 import { scoreCheckin } from "@/lib/mood/scoring";
+import { localDateISO, saveCheckin } from "@/lib/mood/storage";
 
 function Label({ children }: { children: React.ReactNode }) {
   return <div className="text-sm font-medium">{children}</div>;
@@ -155,7 +156,7 @@ export function CheckinClient() {
   const day = sampleDay;
 
   const [answers, setAnswers] = useState<AnswerMap>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState<CheckinResult | null>(null);
 
   const missing = useMemo(() => {
     // Require all non-text questions.
@@ -163,10 +164,7 @@ export function CheckinClient() {
     return required.filter((q) => answers[q.id] === undefined).map((q) => q.id);
   }, [answers, day.questions]);
 
-  const result = useMemo(() => {
-    if (!submitted) return null;
-    return scoreCheckin(day, "general", answers);
-  }, [submitted, day, answers]);
+  const canSubmit = missing.length === 0;
 
   return (
     <div className="space-y-4">
@@ -174,7 +172,19 @@ export function CheckinClient() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setSubmitted(true);
+            if (!canSubmit) return;
+            const r = scoreCheckin(day, "general", answers);
+            setResult(r);
+
+            const now = new Date();
+            saveCheckin({
+              id: `local-${now.getTime()}`,
+              dayId: day.id,
+              dateISO: localDateISO(now),
+              createdAt: now.toISOString(),
+              result: r,
+              answers,
+            });
           }}
           className="space-y-4"
         >
@@ -185,7 +195,7 @@ export function CheckinClient() {
                 q={q}
                 value={answers[q.id]}
                 onChange={(v) => {
-                  setSubmitted(false);
+                  setResult(null);
                   setAnswers((prev) => ({ ...prev, [q.id]: v }));
                 }}
               />
@@ -197,10 +207,10 @@ export function CheckinClient() {
 
           <button
             type="submit"
-            disabled={missing.length > 0}
+            disabled={!canSubmit}
             className={[
               "w-full rounded-xl px-4 py-3 text-sm font-medium",
-              missing.length > 0
+              !canSubmit
                 ? "cursor-not-allowed bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
                 : "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200",
             ].join(" ")}
@@ -209,7 +219,7 @@ export function CheckinClient() {
           </button>
 
           <Help>
-            Pozn.: Toto je MVP demo. Neskôr sem pôjde „daily content“ z adminu a výsledok sa uloží do histórie.
+            Pozn.: MVP používa sample content. Výsledok sa už ukladá lokálne (história), DB príde neskôr.
           </Help>
         </form>
       ) : (
@@ -239,7 +249,7 @@ export function CheckinClient() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => setSubmitted(false)}
+              onClick={() => setResult(null)}
               className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >
               Upraviť odpovede
@@ -248,7 +258,7 @@ export function CheckinClient() {
               type="button"
               onClick={() => {
                 setAnswers({});
-                setSubmitted(false);
+                setResult(null);
               }}
               className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >

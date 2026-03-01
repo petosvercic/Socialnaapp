@@ -2,18 +2,29 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { VioraMark } from "@/components/brand/VioraMark";
+import { BrandStamp } from "@/components/brand/BrandStamp";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="relative min-h-dvh overflow-x-hidden text-zinc-950 dark:text-zinc-50">
       {/* Brand background */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-cover bg-center opacity-35 dark:opacity-20"
+        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-cover bg-[position:50%_55%] opacity-55 saturate-150 contrast-125 dark:opacity-30"
+        aria-hidden
+      />
+      {/* Chroma wash (keeps the background alive, without killing readability) */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-indigo-500/10"
         aria-hidden
       />
       {/* Readability overlay */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/85 dark:from-zinc-950/85 dark:via-zinc-950/65 dark:to-zinc-950/90"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/55 via-white/35 to-white/60 dark:from-zinc-950/80 dark:via-zinc-950/55 dark:to-zinc-950/85"
+        aria-hidden
+      />
+      {/* Tiny dark scrim: makes light backgrounds less "washed out" */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-black/10 dark:bg-black/25"
         aria-hidden
       />
 
@@ -35,6 +46,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-4">
           {children}
         </main>
+
+        <BrandStamp />
 
         <BottomNav />
       </div>

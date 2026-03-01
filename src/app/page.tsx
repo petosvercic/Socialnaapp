@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LastStateCard } from "@/components/mood/LastStateCard";
 
 export default function Home() {
   return (
@@ -32,20 +33,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold tracking-tight">Tvoj posledný stav</h2>
-        <div className="mt-3 flex items-center gap-3">
-          <div className="text-3xl" aria-hidden>
-            🟡
-          </div>
-          <div>
-            <div className="text-sm font-medium">Kolísavý mód</div>
-            <div className="text-xs text-zinc-600 dark:text-zinc-300">
-              Placeholder. Neskôr sem pôjde uložený výsledok z DB.
-            </div>
-          </div>
-        </div>
-      </section>
+      <LastStateCard />
 
       <section className="grid grid-cols-2 gap-4">
         <Link
