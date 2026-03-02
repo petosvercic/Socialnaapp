@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { VioraMark } from "@/components/brand/VioraMark";
 import { BrandStamp } from "@/components/brand/BrandStamp";
+import { AuthBadge } from "@/components/auth/AuthBadge";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -39,7 +40,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <VioraMark className="h-6 w-6" />
               <span>Viora</span>
             </Link>
-            <div className="text-xs text-zinc-600 dark:text-zinc-300">MVP</div>
+            <div className="flex items-center gap-3">
+              <AuthBadge />
+              <div className="text-xs text-zinc-600 dark:text-zinc-300">MVP</div>
+            </div>
           </div>
         </header>
 
