@@ -43,3 +43,7 @@ next-env.d.ts
 # local patch files
 *.patch
 
+
+# local patch files
+*.patch
+
