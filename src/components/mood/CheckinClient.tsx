@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import type { AnswerMap, AnswerValue, CheckinResult, Question } from "@/lib/mood/types";
 import { sampleDay } from "@/lib/mood/sample-day";
 import { scoreCheckin } from "@/lib/mood/scoring";
@@ -157,6 +158,7 @@ export function CheckinClient() {
 
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [result, setResult] = useState<CheckinResult | null>(null);
+  const [syncNote, setSyncNote] = useState<string | null>(null);
 
   const missing = useMemo(() => {
     // Require all non-text questions.
@@ -170,22 +172,54 @@ export function CheckinClient() {
     <div className="space-y-4">
       {!result ? (
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (!canSubmit) return;
             const r = scoreCheckin(day, "general", answers);
             setResult(r);
 
             const now = new Date();
-            saveCheckin({
+            const entry = {
               id: `local-${now.getTime()}`,
               dayId: day.id,
               dateISO: localDateISO(now),
               createdAt: now.toISOString(),
               result: r,
               answers,
-            });
-          }}
+            };
+            saveCheckin(entry);
+            setSyncNote("Uložené lokálne.");
+
+            // Best-effort sync to Supabase (if logged in and DB is ready).
+            const supabase = getSupabaseClient();
+            if (supabase) {
+              const { data } = await supabase.auth.getUser();
+              const user = data.user;
+              if (!user) {
+                setSyncNote("Uložené lokálne. Prihlás sa pre sync.");
+              } else {
+                setSyncNote("Ukladám do účtu...");
+                const { error } = await supabase.from("checkins").upsert(
+                  {
+                    user_id: user.id,
+                    day: entry.dateISO,
+                    score: r.score,
+                    color: r.color,
+                    title: r.status,
+                    blurb: r.meaning,
+                    tip: r.tip,
+                    payload: { category: r.category, icon: r.icon, answers, dayId: day.id },
+                  },
+                  { onConflict: "user_id,day" }
+                );
+
+                if (error) {
+                  setSyncNote(`Uložené lokálne. Účet: ${error.message}`);
+                } else {
+                  setSyncNote("Uložené aj do účtu ✅");
+                }
+              }
+            }}}
           className="space-y-4"
         >
           {day.questions.map((q) => (
@@ -244,6 +278,10 @@ export function CheckinClient() {
                 <div className="mt-1">{result.tip}</div>
               </div>
             </div>
+
+            {syncNote && (
+              <div className="mt-3 text-xs text-zinc-600 dark:text-zinc-300">{syncNote}</div>
+            )}
           </Card>
 
           <div className="grid grid-cols-2 gap-3">

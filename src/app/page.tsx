@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LastStateCard } from "@/components/mood/LastStateCard";
+import { AuthCallout } from "@/components/auth/AuthCallout";
 
 export default function Home() {
   return (
@@ -32,6 +33,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <AuthCallout />
 
       <LastStateCard />
 
