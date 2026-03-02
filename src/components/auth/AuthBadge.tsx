@@ -10,7 +10,7 @@ export function AuthBadge() {
 
   const label = useMemo(() => {
     if (!email) return null;
-    return email.length > 22 ? email.slice(0, 10) + "â€¦" + email.slice(-10) : email;
+    return email.length > 22 ? email.slice(0, 10) + "..." + email.slice(-10) : email;
   }, [email]);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function AuthBadge() {
   }
 
   if (loading) {
-    return <div className="text-xs text-black/50">â€¦</div>;
+    return <div className="text-xs text-black/50">...</div>;
   }
 
   if (!email) {

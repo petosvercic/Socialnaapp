@@ -37,7 +37,9 @@ export default function LoginPage() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const emailRedirectTo = window.location.origin + "/account";
+
+    const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } });
     setBusy(false);
     setMsg(error ? error.message : "Registrácia OK ✅ (ak je zapnuté potvrdenie emailu, pozri inbox)");
   }

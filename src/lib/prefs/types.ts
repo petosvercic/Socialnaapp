@@ -1,4 +1,4 @@
-export type Visibility = "public" | "public" | "friends" | "hidden";
+export type Visibility = "public" | "friends" | "hidden";
 export type FeedDetail = "color" | "icon" | "text";
 
 export type Prefs = {

@@ -219,7 +219,7 @@ export function CheckinClient() {
                   setSyncNote("Uložené aj do účtu ✅");
                 }
               }
-            }}}
+          }}
           className="space-y-4"
         >
           {day.questions.map((q) => (
@@ -253,7 +253,7 @@ export function CheckinClient() {
           </button>
 
           <Help>
-            Pozn.: MVP používa sample content. Výsledok sa už ukladá lokálne (história), DB príde neskôr.
+            Pozn.: MVP používa sample content. Výsledok sa ukladá lokálne a ak si prihlásený, aj do účtu.
           </Help>
         </form>
       ) : (

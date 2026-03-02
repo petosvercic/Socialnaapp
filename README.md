@@ -13,12 +13,24 @@ npm run dev
 
 Open http://localhost:3000
 
-## Why your local folder doesn't match GitHub
+## Supabase (1x setup)
 
-Your local folder will contain generated directories like:
+Ak chceš, aby fungoval login + DB (checkins/prefs/invites/friendships):
 
-- `node_modules/` (dependencies installed by npm)
+1. Supabase Dashboard → **SQL Editor**
+2. Otvor súbor `supabase/schema.sql` (v repozitári)
+3. Skopíruj celý obsah → **Run**
+
+Potom nastav env vars:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+## Prečo lokál nevyzerá ako GitHub
+
+Lokálny priečinok bude obsahovať generované adresáre ako:
+
+- `node_modules/` (závislosti)
 - `.next/` (Next.js build cache/output)
 
-These are intentionally **not** committed to GitHub (they are in `.gitignore`).
-GitHub shows only tracked source files like `src/` and `public/`.
+Tieto veci sa **necommitujú** (sú v `.gitignore`).

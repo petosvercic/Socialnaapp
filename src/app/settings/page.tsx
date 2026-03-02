@@ -33,7 +33,7 @@ export default function SettingsPage() {
     if (!hydrated) return;
     const supabase = getSupabaseClient();
     if (!supabase) {
-      setSyncNote("LokĂˇlne (bez Supabase).");
+      setSyncNote("Lokálne (bez Supabase).");
       return;
     }
 
@@ -41,11 +41,11 @@ export default function SettingsPage() {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       if (!user) {
-        setSyncNote("LokĂˇlne (neprihlĂˇsenĂ˝).");
+        setSyncNote("Lokálne (neprihlásený).");
         return;
       }
 
-      setSyncNote("UkladĂˇm do ĂşÄŤtu...");
+      setSyncNote("Ukladám do účtu...");
       const vis = visibility === "public" ? "public" : visibility;
 
       const { error } = await supabase.from("user_prefs").upsert(
@@ -59,7 +59,7 @@ export default function SettingsPage() {
         { onConflict: "user_id" }
       );
 
-      setSyncNote(error ? `ĂšÄŤet: ${error.message}` : "UloĹľenĂ© aj do ĂşÄŤtu âś…");
+      setSyncNote(error ? `Účet: ${error.message}` : "Uložené aj do účtu ✅");
     })().catch((e) => setSyncNote(String(e?.message ?? e)));
   }, [hydrated, visibility, detail, invisibleToday]);
 
@@ -76,16 +76,16 @@ export default function SettingsPage() {
       )}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="text-sm font-medium">ViditeÄľnosĹĄ dnes</div>
+        <div className="text-sm font-medium">Viditeľnosť dnes</div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          Aby to nebolo toxickĂ©. Tvoje dĂˇta, tvoja voÄľba.
+          Aby to nebolo toxické. Tvoje dáta, tvoja voľba.
         </p>
 
         <label className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950">
           <div>
             <div className="font-medium">Invisible today</div>
             <div className="text-xs text-zinc-600 dark:text-zinc-300">
-              Skryje ĹĄa z feedu (bez vysvetÄľovania ÄľuÄŹom).
+              Skryje ťa z feedu (bez vysvetľovania ľuďom).
             </div>
           </div>
           <input
@@ -99,9 +99,9 @@ export default function SettingsPage() {
 
         <div className="mt-3 grid grid-cols-3 gap-2">
           {[
-            { id: "public", label: "VĹˇetci" },
+            { id: "public", label: "Všetci" },
             { id: "friends", label: "Priatelia" },
-            { id: "hidden", label: "SkrytĂ©" },
+            { id: "hidden", label: "Skryté" },
           ].map((opt) => (
             <button
               key={opt.id}
@@ -120,13 +120,13 @@ export default function SettingsPage() {
         </div>
 
         <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">AktuĂˇlne</div>
+          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Aktuálne</div>
           <div className="mt-1">
             {effectiveVisibility === "hidden"
-              ? "SkrytĂ©"
+              ? "Skryté"
               : effectiveVisibility === "friends"
               ? "Len priatelia"
-              : "VĹˇetci"}
+              : "Všetci"}
           </div>
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function SettingsPage() {
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="text-sm font-medium">Detail v feede</div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          ÄŚo uvidia ostatnĂ­: len farbu, farbu + ikonu, alebo aj krĂˇtky text (podÄľa tvojho poslednĂ©ho check-inu).
+          Čo uvidia ostatní: len farbu, farbu + ikonu, alebo aj krátky text (podľa tvojho posledného check-inu).
         </p>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -160,12 +160,12 @@ export default function SettingsPage() {
         </div>
 
         <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">NĂˇhÄľad</div>
+          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
           <div className="mt-1">
             {effectiveVisibility === "hidden"
-              ? "SkrytĂ©"
+              ? "Skryté"
               : !latest
-                ? "â€”"
+                ? "—"
                 : detail === "color"
                   ? latest.result.icon
                   : detail === "icon"
@@ -178,7 +178,7 @@ export default function SettingsPage() {
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="text-sm font-medium">Reset</div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          Ak si to naklikal v hneve. StĂˇva sa. Ä˝uÄŹom.
+          Ak si to naklikal v hneve. Stáva sa. Ľuďom.
         </p>
         <button
           type="button"
@@ -190,7 +190,7 @@ export default function SettingsPage() {
           }}
           className="mt-3 inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
         >
-          ResetovaĹĄ nastavenia
+          Resetovať nastavenia
         </button>
       </div>
     </div>
