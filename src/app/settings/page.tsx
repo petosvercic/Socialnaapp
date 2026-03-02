@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getLatestCheckin, type StoredCheckin } from "@/lib/mood/storage";
 import type { FeedDetail, Visibility } from "@/lib/prefs/types";
 import { defaultPrefs } from "@/lib/prefs/types";
 import { loadPrefs, resetPrefs, updatePrefs } from "@/lib/prefs/storage";
@@ -10,12 +11,14 @@ export default function SettingsPage() {
   const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
   const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
   const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
+  const [latest, setLatest] = useState<StoredCheckin | null>(null);
 
   useEffect(() => {
     const prefs = loadPrefs();
     setVisibility(prefs.visibility);
     setDetail(prefs.detail);
     setInvisibleToday(prefs.invisibleToday);
+    setLatest(getLatestCheckin("general"));
     setHydrated(true);
   }, []);
 
@@ -91,7 +94,7 @@ export default function SettingsPage() {
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="text-sm font-medium">Detail v feede</div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-          Čo uvidia ostatní: len farbu, farbu + ikonu, alebo aj krátky text.
+          Čo uvidia ostatní: len farbu, farbu + ikonu, alebo aj krátky text (podľa tvojho posledného check-inu).
         </p>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -119,7 +122,15 @@ export default function SettingsPage() {
         <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
           <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
           <div className="mt-1">
-            {detail === "color" ? "🟡" : detail === "icon" ? "🟡 🧭" : "🟡 Kolísavý mód"}
+            {effectiveVisibility === "hidden"
+              ? "Skryté"
+              : !latest
+                ? "—"
+                : detail === "color"
+                  ? latest.result.icon
+                  : detail === "icon"
+                    ? `${latest.result.icon}`
+                    : `${latest.result.icon} ${latest.result.status}`}
           </div>
         </div>
       </div>
