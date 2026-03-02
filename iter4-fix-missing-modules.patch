@@ -1,0 +1,383 @@
+diff --git a/src/components/friends/FriendsClient.tsx b/src/components/friends/FriendsClient.tsx
+new file mode 100644
+index 0000000..89d15fd
+--- /dev/null
++++ b/src/components/friends/FriendsClient.tsx
+@@ -0,0 +1,238 @@
++"use client";
++
++import Link from "next/link";
++import { useEffect, useMemo, useState } from "react";
++import type { CheckinResult, MoodColor } from "@/lib/mood/types";
++import { loadPrefs } from "@/lib/prefs/storage";
++import type { Prefs } from "@/lib/prefs/types";
++
++type Friend = {
++  id: string;
++  name: string;
++  handle: string;
++  result: CheckinResult;
++  updatedAtISO: string;
++};
++
++type PingKind = "heart" | "coffee" | "quiet" | "wave";
++
++type PingEvent = {
++  id: string;
++  friendId: string;
++  kind: PingKind;
++  createdAtISO: string;
++};
++
++const PINGS_KEY = "viora:pings:v1";
++
++function Card({ children }: { children: React.ReactNode }) {
++  return (
++    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
++      {children}
++    </div>
++  );
++}
++
++function colorDot(color: MoodColor) {
++  switch (color) {
++    case "green":
++      return "🟢";
++    case "yellow":
++      return "🟡";
++    case "orange":
++      return "🟠";
++    case "red":
++      return "🔴";
++  }
++}
++
++function safeParse<T>(raw: string | null): T | null {
++  if (!raw) return null;
++  try {
++    return JSON.parse(raw) as T;
++  } catch {
++    return null;
++  }
++}
++
++function loadPings(): PingEvent[] {
++  if (typeof window === "undefined") return [];
++  const data = safeParse<PingEvent[]>(window.localStorage.getItem(PINGS_KEY));
++  return Array.isArray(data) ? data : [];
++}
++
++function savePings(items: PingEvent[]) {
++  if (typeof window === "undefined") return;
++  window.localStorage.setItem(PINGS_KEY, JSON.stringify(items.slice(0, 50)));
++}
++
++function nowISO() {
++  return new Date().toISOString();
++}
++
++function makeId() {
++  return Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
++}
++
++const pingButtons: { kind: PingKind; icon: string; label: string }[] = [
++  { kind: "heart", icon: "🫶", label: "Som tu" },
++  { kind: "coffee", icon: "☕", label: "Káva?" },
++  { kind: "quiet", icon: "👀", label: "Neruším" },
++  { kind: "wave", icon: "👋", label: "Ping" },
++];
++
++function formatTime(iso: string) {
++  const d = new Date(iso);
++  const hh = String(d.getHours()).padStart(2, "0");
++  const mm = String(d.getMinutes()).padStart(2, "0");
++  return `${hh}:${mm}`;
++}
++
++export function FriendsClient() {
++  const [toast, setToast] = useState<string | null>(null);
++  const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs());
++  const [pings, setPings] = useState<PingEvent[]>([]);
++
++  useEffect(() => {
++    setPrefs(loadPrefs());
++    setPings(loadPings());
++  }, []);
++
++  useEffect(() => {
++    if (!toast) return;
++    const t = setTimeout(() => setToast(null), 2200);
++    return () => clearTimeout(t);
++  }, [toast]);
++
++  const demoFriends: Friend[] = useMemo(
++    () => [
++      {
++        id: "f1",
++        name: "Nina",
++        handle: "@nina",
++        updatedAtISO: nowISO(),
++        result: {
++          category: "general",
++          score: 82,
++          color: "green",
++          icon: "🌿",
++          status: "Vyrovnaná",
++          meaning: "Dnes pôsobíš stabilne. Dá sa s tebou normálne fungovať.",
++          tip: "Sprav jednu vec poriadne, potom pauza.",
++        },
++      },
++      {
++        id: "f2",
++        name: "Miro",
++        handle: "@miro",
++        updatedAtISO: nowISO(),
++        result: {
++          category: "general",
++          score: 54,
++          color: "yellow",
++          icon: "🧭",
++          status: "Kolísavý mód",
++          meaning: "Raz ideš, raz sa ti nechce. Klasika.",
++          tip: "Drž sa menších rozhodnutí.",
++        },
++      },
++      {
++        id: "f3",
++        name: "Lukáš",
++        handle: "@luky",
++        updatedAtISO: nowISO(),
++        result: {
++          category: "general",
++          score: 28,
++          color: "orange",
++          icon: "⚡",
++          status: "Preťažený",
++          meaning: "Krátka zápalná šnúra. Dnes radšej jemne.",
++          tip: "Odlož konflikty a rieš len nutné.",
++        },
++      },
++    ],
++    []
++  );
++
++  function sendPing(friendId: string, kind: PingKind) {
++    const next: PingEvent = { id: makeId(), friendId, kind, createdAtISO: nowISO() };
++    const items = [next, ...pings];
++    setPings(items);
++    savePings(items);
++    const meta = pingButtons.find((p) => p.kind === kind);
++    setToast(meta ? `${meta.icon} odoslané` : "Ping odoslaný");
++  }
++
++  async function copyInviteLink() {
++    const code = "DEMO";
++    const origin = typeof window !== "undefined" ? window.location.origin : "";
++    const link = origin ? `${origin}/invite/${code}` : `/invite/${code}`;
++
++    try {
++      await navigator.clipboard.writeText(link);
++      setToast("Invite link skopírovaný");
++    } catch {
++      setToast("Clipboard bloknutý. Skús manuálne.");
++    }
++  }
++
++  return (
++    <div className="space-y-4">
++      <div className="flex items-end justify-between">
++        <div>
++          <h1 className="text-lg font-semibold tracking-tight">Priatelia</h1>
++          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
++            Semafor bez kecov. Lebo nie každý deň je deň na smalltalk.
++          </p>
++        </div>
++        <Link
++          href="/settings"
++          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++          title="Nastavenia viditeľnosti"
++        >
++          ⚙️
++        </Link>
++      </div>
++
++      <Card>
++        <div className="flex items-center justify-between">
++          <div className="text-sm font-medium">Feed</div>
++          <div className="text-xs text-zinc-600 dark:text-zinc-300">detail: {prefs.detail}</div>
++        </div>
++
++        <div className="mt-3 space-y-2">
++          {demoFriends.map((f) => (
++            <div
++              key={f.id}
++              className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950"
++            >
++              <div className="min-w-0">
++                <div className="flex items-center gap-2">
++                  <div className="text-lg" aria-hidden>
++                    {colorDot(f.result.color)}
++                  </div>
++                  <div className="truncate font-medium">
++                    {f.name} <span className="text-xs text-zinc-500">{f.handle}</span>
++                  </div>
++                </div>
++                <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
++                  {prefs.detail === "color" && "Len semafor."}
++                  {prefs.detail === "icon" && `${f.result.icon} ${f.result.status}`}
++                  {prefs.detail === "text" && `${f.result.icon} ${f.result.status} · ${f.result.tip}`}
++                </div>
++              </div>
++
++              <div className="flex shrink-0 items-center gap-1">
++                {pingButtons.map((p) => (
++                  <button
++                    key={p.kind}
++                    type="button"
++                    onClick={() => sendPing(f.id, p.kind)}
++                    className="rounded-lg border border-zinc-200 bg-white px-2 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++                    title={p.label}
++                  >
++                    {p.icon}
++                  </button>
++                ))}
++              </div>
++            </div>
++          ))}
++        </div>
++      </Card>
++
++      <Card>
++        <div className="text-sm font-medium">Posledné pingy</div>
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">MVP log (lokálne).</p>
++
++        <div className="mt-3 space-y-2">
++          {pings.length === 0 ? (
++            <div className="text-sm text-zinc-600 dark:text-zinc-300">Zatiaľ nič.</div>
++          ) : (
++            pings.slice(0, 8).map((p) => {
++              const meta = pingButtons.find((x) => x.kind === p.kind);
++              const friend = demoFriends.find((f) => f.id === p.friendId);
++              return (
++                <div
++                  key={p.id}
++                  className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
++                >
++                  <div className="flex items-center gap-2">
++                    <span aria-hidden>{meta?.icon ?? "👋"}</span>
++                    <span className="font-medium">{friend?.name ?? "Unknown"}</span>
++                    <span className="text-zinc-500">{meta?.label ?? "Ping"}</span>
++                  </div>
++                  <div className="text-xs text-zinc-500">{formatTime(p.createdAtISO)}</div>
++                </div>
++              );
++            })
++          )}
++        </div>
++      </Card>
++
++      <Card>
++        <div className="text-sm font-medium">Pozvať priateľa</div>
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
++          Zatiaľ demo. Neskôr sem pôjde referral a goldy.
++        </p>
++        <button
++          type="button"
++          onClick={copyInviteLink}
++          className="mt-3 inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
++        >
++          Skopírovať invite link
++        </button>
++      </Card>
++
++      {toast ? (
++        <div className="fixed left-1/2 top-16 z-30 -translate-x-1/2 rounded-2xl border border-white/20 bg-zinc-950/80 px-4 py-2 text-sm text-white shadow-lg backdrop-blur dark:bg-white/15">
++          {toast}
++        </div>
++      ) : null}
++    </div>
++  );
++}
++
++
+diff --git a/src/lib/prefs/storage.ts b/src/lib/prefs/storage.ts
+new file mode 100644
+index 0000000..e129a91
+--- /dev/null
++++ b/src/lib/prefs/storage.ts
+@@ -0,0 +1,69 @@
++import { defaultPrefs, type Prefs } from "@/lib/prefs/types";
++
++const KEY = "viora:prefs:v1";
++
++function canUseStorage() {
++  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
++}
++
++function safeParse<T>(raw: string | null): T | null {
++  if (!raw) return null;
++  try {
++    return JSON.parse(raw) as T;
++  } catch {
++    return null;
++  }
++}
++
++function save(prefs: Prefs) {
++  if (!canUseStorage()) return;
++  window.localStorage.setItem(KEY, JSON.stringify(prefs));
++}
++
++/**
++ * Load UI/visibility prefs.
++ * Safe for SSR (returns defaults).
++ */
++export function loadPrefs(): Prefs {
++  if (!canUseStorage()) return defaultPrefs;
++  const parsed = safeParse<Prefs>(window.localStorage.getItem(KEY));
++  if (!parsed) return defaultPrefs;
++
++  // minimal validation to avoid bricking the UI
++  return {
++    ...defaultPrefs,
++    ...parsed,
++  };
++}
++
++export function updatePrefs(patch: Partial<Prefs>): Prefs {
++  const next: Prefs = { ...loadPrefs(), ...patch };
++  save(next);
++  return next;
++}
++
++export function resetPrefs(): Prefs {
++  if (canUseStorage()) window.localStorage.removeItem(KEY);
++  return defaultPrefs;
++}
++
++
+diff --git a/src/lib/prefs/types.ts b/src/lib/prefs/types.ts
+new file mode 100644
+index 0000000..d6d645a
+--- /dev/null
++++ b/src/lib/prefs/types.ts
+@@ -0,0 +1,27 @@
++export type Visibility = "everyone" | "friends" | "hidden";
++export type FeedDetail = "color" | "icon" | "text";
++
++/**
++ * Lightweight prefs for MVP.
++ * Later this can be persisted per-user in Supabase.
++ */
++export type Prefs = {
++  visibility: Visibility;
++  detail: FeedDetail;
++  invisibleToday: boolean;
++};
++
++export const defaultPrefs: Prefs = {
++  visibility: "friends",
++  detail: "icon",
++  invisibleToday: false,
++};
++
