@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,14 @@ export default function LoginPage() {
   async function signIn() {
     setBusy(true);
     setMsg(null);
+
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setBusy(false);
+      setMsg("Chýba Supabase ENV (URL/KEY). Skontroluj .env.local a Vercel env vars.");
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     setMsg(error ? error.message : "Prihlásenie OK ✅");
@@ -21,9 +29,17 @@ export default function LoginPage() {
   async function signUp() {
     setBusy(true);
     setMsg(null);
+
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setBusy(false);
+      setMsg("Chýba Supabase ENV (URL/KEY). Skontroluj .env.local a Vercel env vars.");
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({ email, password });
     setBusy(false);
-    setMsg(error ? error.message : "Registrácia OK ✅ (pozri email, ak máš zapnuté potvrdenie)");
+    setMsg(error ? error.message : "Registrácia OK ✅ (ak je zapnuté potvrdenie emailu, pozri inbox)");
   }
 
   return (
