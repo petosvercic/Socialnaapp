@@ -1,0 +1,262 @@
+diff --git a/src/app/invite/[code]/page.tsx b/src/app/invite/[code]/page.tsx
+new file mode 100644
+index 0000000..f0b4c4b
+--- /dev/null
++++ b/src/app/invite/[code]/page.tsx
+@@ -0,0 +1,92 @@
++"use client";
++
++import Link from "next/link";
++import { useMemo, useState } from "react";
++import { VioraMark } from "@/components/brand/VioraMark";
++
++export default function InvitePage({ params }: { params: { code: string } }) {
++  const [copied, setCopied] = useState(false);
++
++  const inviteUrl = useMemo(() => {
++    if (typeof window === "undefined") return `/invite/${params.code}`;
++    return `${window.location.origin}/invite/${params.code}`;
++  }, [params.code]);
++
++  async function copy() {
++    try {
++      await navigator.clipboard.writeText(inviteUrl);
++      setCopied(true);
++      window.setTimeout(() => setCopied(false), 1400);
++    } catch {
++      // ignore
++    }
++  }
++
++  return (
++    <div className="mx-auto w-full max-w-2xl space-y-4">
++      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/50">
++        <div className="flex items-start justify-between gap-4">
++          <div>
++            <div className="flex items-center gap-2">
++              <VioraMark className="h-5 w-5" />
++              <h1 className="text-lg font-semibold tracking-tight">Pozvánka do Viory</h1>
++            </div>
++            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
++              MVP verzia: zatiaľ nič „nepotvrdzuje“ ani nevytvára priateľstvo. Toto je len landing stránka, aby link
++              nepadal na 404.
++            </p>
++          </div>
++          <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
++            MVP
++          </span>
++        </div>
++
++        <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
++          <div className="text-xs text-zinc-500 dark:text-zinc-400">Kód pozvánky</div>
++          <div className="mt-1 font-mono text-sm font-semibold tracking-wide">{params.code}</div>
++          <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">Link</div>
++          <div className="mt-1 break-all font-mono text-xs text-zinc-700 dark:text-zinc-200">{inviteUrl}</div>
++        </div>
++
++        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
++          <Link
++            href="/"
++            className="inline-flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
++          >
++            Otvoriť Vioru
++          </Link>
++          <button
++            type="button"
++            onClick={copy}
++            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++          >
++            {copied ? "Skopírované" : "Kopírovať link"}
++          </button>
++        </div>
++      </div>
++    </div>
++  );
++}
++
+diff --git a/src/app/settings/page.tsx b/src/app/settings/page.tsx
+index 7067a17..2e0a0cb 100644
+--- a/src/app/settings/page.tsx
++++ b/src/app/settings/page.tsx
+@@ -1,83 +1,123 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useState } from "react";
++import { useEffect, useMemo, useState } from "react";
+ import { getLatestCheckin, type StoredCheckin } from "@/lib/mood/storage";
+-import type { FeedDetail, Visibility } from "@/lib/prefs/types";
+-import { defaultPrefs } from "@/lib/prefs/types";
++import type { FeedDetail, Prefs, Visibility } from "@/lib/prefs/types";
++import { defaultPrefs } from "@/lib/prefs/types";
+ import { loadPrefs, resetPrefs, updatePrefs } from "@/lib/prefs/storage";
+ 
+ export default function SettingsPage() {
+   const [hydrated, setHydrated] = useState(false);
+-  const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
+-  const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
+-  const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
++  const [saved, setSaved] = useState<Prefs>(defaultPrefs);
++  const [draft, setDraft] = useState<Pick<Prefs, "visibility" | "detail" | "invisibleToday">>({
++    visibility: defaultPrefs.visibility,
++    detail: defaultPrefs.detail,
++    invisibleToday: defaultPrefs.invisibleToday,
++  });
+   const [latest, setLatest] = useState<StoredCheckin | null>(null);
+ 
+   useEffect(() => {
+     const prefs = loadPrefs();
+-    setVisibility(prefs.visibility);
+-    setDetail(prefs.detail);
+-    setInvisibleToday(prefs.invisibleToday);
++    setSaved(prefs);
++    setDraft({ visibility: prefs.visibility, detail: prefs.detail, invisibleToday: prefs.invisibleToday });
+     setLatest(getLatestCheckin("general"));
+     setHydrated(true);
+   }, []);
+-
+-  useEffect(() => {
+-    if (!hydrated) return;
+-    updatePrefs({ visibility, detail, invisibleToday });
+-  }, [hydrated, visibility, detail, invisibleToday]);
+ 
+   const effectiveVisibility: Visibility = useMemo(() => {
+-    return invisibleToday ? "hidden" : visibility;
+-  }, [invisibleToday, visibility]);
++    return draft.invisibleToday ? "hidden" : draft.visibility;
++  }, [draft.invisibleToday, draft.visibility]);
++
++  const dirty = useMemo(() => {
++    if (!hydrated) return false;
++    return (
++      draft.visibility !== saved.visibility ||
++      draft.detail !== saved.detail ||
++      draft.invisibleToday !== saved.invisibleToday
++    );
++  }, [draft.detail, draft.invisibleToday, draft.visibility, hydrated, saved.detail, saved.invisibleToday, saved.visibility]);
++
++  function apply() {
++    const next = updatePrefs({
++      visibility: draft.visibility,
++      detail: draft.detail,
++      invisibleToday: draft.invisibleToday,
++    });
++    setSaved(next);
++    setDraft({ visibility: next.visibility, detail: next.detail, invisibleToday: next.invisibleToday });
++  }
++
++  function cancel() {
++    setDraft({ visibility: saved.visibility, detail: saved.detail, invisibleToday: saved.invisibleToday });
++  }
+ 
+   return (
+     <div className="space-y-4">
+       <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+@@ -96,7 +136,10 @@ export default function SettingsPage() {
+           <input
+             type="checkbox"
+-            checked={invisibleToday}
+-            onChange={(e) => setInvisibleToday(e.target.checked)}
++            checked={draft.invisibleToday}
++            onChange={(e) =>
++              setDraft((d) => ({ ...d, invisibleToday: e.target.checked }))
++            }
+             className="h-5 w-5 accent-zinc-950 dark:accent-white"
+             aria-label="Invisible today"
+           />
+         </label>
+@@ -112,7 +155,7 @@ export default function SettingsPage() {
+           ].map((opt) => (
+             <button
+               key={opt.id}
+               type="button"
+-              onClick={() => setVisibility(opt.id as Visibility)}
++              onClick={() => setDraft((d) => ({ ...d, visibility: opt.id as Visibility }))}
+               className={[
+                 "rounded-xl border px-3 py-2 text-sm",
+                 effectiveVisibility === opt.id
+@@ -150,7 +193,7 @@ export default function SettingsPage() {
+           ].map((opt) => (
+             <button
+               key={opt.id}
+               type="button"
+-              onClick={() => setDetail(opt.id as FeedDetail)}
++              onClick={() => setDraft((d) => ({ ...d, detail: opt.id as FeedDetail }))}
+               className={[
+                 "rounded-xl border px-3 py-2 text-sm",
+-                detail === opt.id
++                draft.detail === opt.id
+                   ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+                   : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+               ].join(" ")}
+             >
+               {opt.label}
+             </button>
+           ))}
+         </div>
+ 
+         <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+           <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
+           <div className="mt-1">
+@@ -160,11 +203,11 @@ export default function SettingsPage() {
+               : !latest
+                 ? "—"
+-                : detail === "color"
++                : draft.detail === "color"
+                   ? latest.result.icon
+-                  : detail === "icon"
++                  : draft.detail === "icon"
+                     ? `${latest.result.icon}`
+                     : `${latest.result.icon} ${latest.result.status}`}
+           </div>
++          <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
++            Poznámka: toto mení len to, čo o tebe uvidia ostatní. Neovplyvní to, čo ty uvidíš o nich.
++          </div>
+         </div>
+       </div>
+@@ -182,11 +225,38 @@ export default function SettingsPage() {
+         <button
+           type="button"
+           onClick={() => {
+             const p = resetPrefs();
+-            setVisibility(p.visibility);
+-            setDetail(p.detail);
+-            setInvisibleToday(p.invisibleToday);
++            const next = updatePrefs({ visibility: p.visibility, detail: p.detail, invisibleToday: p.invisibleToday });
++            setSaved(next);
++            setDraft({ visibility: next.visibility, detail: next.detail, invisibleToday: next.invisibleToday });
+           }}
+           className="mt-3 inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+         >
+           Resetovať nastavenia
+         </button>
+       </div>
++
++      {dirty && (
++        <div className="sticky bottom-20 z-10 rounded-2xl border border-fuchsia-200 bg-white/80 p-3 shadow-sm backdrop-blur dark:border-fuchsia-900/40 dark:bg-zinc-950/50">
++          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
++            <div className="text-sm">
++              <span className="font-medium">Neuložené zmeny</span>
++              <span className="ml-2 text-zinc-600 dark:text-zinc-300">Ulož alebo zruš, nech to má zmysel.</span>
++            </div>
++            <div className="flex gap-2">
++              <button
++                type="button"
++                onClick={cancel}
++                className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++              >
++                Zrušiť
++              </button>
++              <button
++                type="button"
++                onClick={apply}
++                className="inline-flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
++              >
++                Potvrdiť
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
+     </div>
+   );
+ }
