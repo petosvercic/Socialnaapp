@@ -10,7 +10,7 @@ export function AuthBadge() {
 
   const label = useMemo(() => {
     if (!email) return null;
-    return email.length > 22 ? email.slice(0, 10) + "…" + email.slice(-10) : email;
+    return email.length > 22 ? email.slice(0, 10) + "â€¦" + email.slice(-10) : email;
   }, [email]);
 
   useEffect(() => {
@@ -42,14 +42,14 @@ export function AuthBadge() {
   }
 
   if (loading) {
-    return <div className=\"text-xs text-black/50\">…</div>;
+    return <div className="text-xs text-black/50">â€¦</div>;
   }
 
   if (!email) {
     return (
       <Link
-        href=\"/login\"
-        className=\"rounded-xl border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium hover:bg-white\"
+        href="/login"
+        className="rounded-xl border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium hover:bg-white"
       >
         Login
       </Link>
@@ -57,17 +57,17 @@ export function AuthBadge() {
   }
 
   return (
-    <div className=\"flex items-center gap-2\">
+    <div className="flex items-center gap-2">
       <Link
-        href=\"/account\"
+        href="/account"
         title={email}
-        className=\"max-w-[160px] truncate rounded-xl border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium hover:bg-white\"
+        className="max-w-[160px] truncate rounded-xl border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium hover:bg-white"
       >
         {label}
       </Link>
       <button
         onClick={logout}
-        className=\"rounded-xl bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-black/90\"
+        className="rounded-xl bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-black/90"
       >
         Logout
       </button>
