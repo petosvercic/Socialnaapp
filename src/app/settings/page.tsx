@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import { getLatestCheckin, type StoredCheckin } from "@/lib/mood/storage";
 import type { FeedDetail, Visibility } from "@/lib/prefs/types";
 import { defaultPrefs } from "@/lib/prefs/types";
@@ -10,6 +11,7 @@ export default function SettingsPage() {
   const [hydrated, setHydrated] = useState(false);
   const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
   const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
+  const [syncNote, setSyncNote] = useState<string | null>(null);
   const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
   const [latest, setLatest] = useState<StoredCheckin | null>(null);
 
@@ -27,6 +29,40 @@ export default function SettingsPage() {
     updatePrefs({ visibility, detail, invisibleToday });
   }, [hydrated, visibility, detail, invisibleToday]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setSyncNote("Lokálne (bez Supabase).");
+      return;
+    }
+
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      if (!user) {
+        setSyncNote("Lokálne (neprihlásený).");
+        return;
+      }
+
+      setSyncNote("Ukladám do účtu...");
+      const vis = visibility === "everyone" ? "public" : visibility;
+
+      const { error } = await supabase.from("user_prefs").upsert(
+        {
+          user_id: user.id,
+          visibility: vis as any,
+          feed_detail: detail as any,
+          invisible_today: invisibleToday,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+
+      setSyncNote(error ? `Účet: ${error.message}` : "Uložené aj do účtu ✅");
+    })().catch((e) => setSyncNote(String(e?.message ?? e)));
+  }, [hydrated, visibility, detail, invisibleToday]);
+
   const effectiveVisibility: Visibility = useMemo(() => {
     return invisibleToday ? "hidden" : visibility;
   }, [invisibleToday, visibility]);
@@ -34,6 +70,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+
+      {syncNote && (
+        <div className="text-xs text-zinc-500 dark:text-zinc-400">{syncNote}</div>
+      )}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="text-sm font-medium">Viditeľnosť dnes</div>

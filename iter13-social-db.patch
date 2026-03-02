@@ -1,0 +1,914 @@
+diff --git a/src/app/history/page.tsx b/src/app/history/page.tsx
+index 534d197..3fa2c5f 100644
+--- a/src/app/history/page.tsx
++++ b/src/app/history/page.tsx
+@@ -1,11 +1,16 @@
+ import { HistoryClient } from "@/components/mood/HistoryClient";
++import { AuthGate } from "@/components/auth/AuthGate";
+ 
+ export default function HistoryPage() {
+   return (
+-    <div className="space-y-4">
+-      <h1 className="text-lg font-semibold tracking-tight">História</h1>
+-
+-      <HistoryClient />
+-    </div>
++    <AuthGate
++      title="História je viazaná na účet"
++      description="Lokálny demo režim je fajn, ale história a trendy dávajú zmysel až keď je to syncnuté do účtu."
++    >
++      <div className="space-y-4">
++        <h1 className="text-lg font-semibold tracking-tight">História</h1>
++        <HistoryClient />
++      </div>
++    </AuthGate>
+   );
+ }
+diff --git a/src/app/invite/[code]/page.tsx b/src/app/invite/[code]/page.tsx
+index 9a5eae2..a04b79f 100644
+--- a/src/app/invite/[code]/page.tsx
++++ b/src/app/invite/[code]/page.tsx
+@@ -1,11 +1,79 @@
+ "use client";
+ 
+ import Link from "next/link";
+-import { useParams } from "next/navigation";
++import { useParams, useRouter } from "next/navigation";
++import { useEffect, useState } from "react";
++import { getSupabaseClient } from "@/lib/supabase/client";
+ 
+ export default function InvitePage() {
+   const params = useParams<{ code?: string }>();
+-  const code = (params?.code ?? "").toString();
++  const router = useRouter();
++  const code = (params?.code ?? "").toString().trim().toLowerCase();
++
++  const [meId, setMeId] = useState<string | null>(null);
++  const [status, setStatus] = useState<string | null>(null);
++  const [checking, setChecking] = useState(true);
++
++  useEffect(() => {
++    const supabase = getSupabaseClient();
++    if (!supabase) {
++      setStatus("Chýba Supabase ENV. Invite funguje len keď je Supabase nastavený.");
++      setChecking(false);
++      return;
++    }
++
++    supabase.auth.getUser().then(({ data }) => {
++      setMeId(data.user?.id ?? null);
++      setChecking(false);
++    });
++  }, []);
++
++  async function accept() {
++    const supabase = getSupabaseClient();
++    if (!supabase) return;
++
++    setStatus(null);
++
++    const { data } = await supabase.auth.getUser();
++    const user = data.user;
++    if (!user) {
++      setStatus("Najprv sa prihlás.");
++      router.push("/login");
++      return;
++    }
++
++    setStatus("Prijímam pozvánku...");
++
++    const { data: updated, error: updErr } = await supabase
++      .from("invites")
++      .update({ invitee_id: user.id, accepted_at: new Date().toISOString() })
++      .eq("code", code)
++      .is("accepted_at", null)
++      .is("invitee_id", null)
++      .select("inviter_id")
++      .limit(1);
++
++    if (updErr) {
++      setStatus(`Chyba: ${updErr.message}`);
++      return;
++    }
++
++    const inviterId = (updated?.[0] as any)?.inviter_id as string | undefined;
++    if (!inviterId) {
++      setStatus("Pozvánka je neplatná alebo už použitá.");
++      return;
++    }
++
++    const { error: frErr } = await supabase.from("friendships").insert({ user_a: inviterId, user_b: user.id });
++    if (frErr) {
++      setStatus(`Chyba: ${frErr.message}`);
++      return;
++    }
++
++    setStatus("Hotovo ✅ Ste priatelia.");
++    router.push("/friends");
++    router.refresh();
++  }
+ 
+   return (
+     <div className="mx-auto w-full max-w-2xl px-4 py-6">
+@@ -13,7 +81,7 @@ export default function InvitePage() {
+         <div className="text-sm font-medium text-black/60">Pozvánka</div>
+         <h1 className="mt-1 text-2xl font-semibold">Viora invite</h1>
+         <p className="mt-2 text-sm text-black/70">
+-          MVP stránka, aby link nepadal na 404. Neskôr tu bude prijatie pozvánky a vytvorenie priateľstva v DB.
++          Otvoril si link s kódom. Ak si prihlásený, môžeš pozvánku prijať a vytvorí sa priateľstvo.
+         </p>
+ 
+         <div className="mt-4 rounded-xl border border-black/10 bg-white p-4">
+@@ -21,15 +89,42 @@ export default function InvitePage() {
+           <div className="mt-1 break-all font-mono text-base">{code || "—"}</div>
+         </div>
+ 
+-        <div className="mt-5 flex gap-2">
+-          <Link href="/" className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium hover:bg-black/5">
++        {status && <div className="mt-3 rounded-xl border border-black/10 bg-white p-3 text-sm">{status}</div>}
++
++        <div className="mt-5 flex flex-wrap gap-2">
++          <Link
++            href="/"
++            className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium hover:bg-black/5"
++          >
+             Späť na Home
+           </Link>
+-          <Link href="/friends" className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90">
++
++          {!checking && !meId ? (
++            <Link
++              href="/login"
++              className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
++            >
++              Prihlásiť sa
++            </Link>
++          ) : (
++            <button
++              type="button"
++              onClick={accept}
++              className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
++              disabled={!code}
++            >
++              Prijať pozvánku
++            </button>
++          )}
++
++          <Link
++            href="/friends"
++            className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium hover:bg-black/5"
++          >
+             Priatelia
+           </Link>
+         </div>
+       </div>
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/settings/page.tsx b/src/app/settings/page.tsx
+index 27236c3..0689bd0 100644
+--- a/src/app/settings/page.tsx
++++ b/src/app/settings/page.tsx
+@@ -1,6 +1,7 @@
+ "use client";
+ 
+ import { useEffect, useMemo, useState } from "react";
++import { getSupabaseClient } from "@/lib/supabase/client";
+ import { getLatestCheckin, type StoredCheckin } from "@/lib/mood/storage";
+ import type { FeedDetail, Visibility } from "@/lib/prefs/types";
+ import { defaultPrefs } from "@/lib/prefs/types";
+@@ -10,6 +11,7 @@ export default function SettingsPage() {
+   const [hydrated, setHydrated] = useState(false);
+   const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
+   const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
++  const [syncNote, setSyncNote] = useState<string | null>(null);
+   const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
+   const [latest, setLatest] = useState<StoredCheckin | null>(null);
+ 
+@@ -27,6 +29,40 @@ export default function SettingsPage() {
+     updatePrefs({ visibility, detail, invisibleToday });
+   }, [hydrated, visibility, detail, invisibleToday]);
+ 
++  useEffect(() => {
++    if (!hydrated) return;
++    const supabase = getSupabaseClient();
++    if (!supabase) {
++      setSyncNote("Lokálne (bez Supabase).");
++      return;
++    }
++
++    (async () => {
++      const { data } = await supabase.auth.getUser();
++      const user = data.user;
++      if (!user) {
++        setSyncNote("Lokálne (neprihlásený).");
++        return;
++      }
++
++      setSyncNote("Ukladám do účtu...");
++      const vis = visibility === "everyone" ? "public" : visibility;
++
++      const { error } = await supabase.from("user_prefs").upsert(
++        {
++          user_id: user.id,
++          visibility: vis as any,
++          feed_detail: detail as any,
++          invisible_today: invisibleToday,
++          updated_at: new Date().toISOString(),
++        },
++        { onConflict: "user_id" }
++      );
++
++      setSyncNote(error ? `Účet: ${error.message}` : "Uložené aj do účtu ✅");
++    })().catch((e) => setSyncNote(String(e?.message ?? e)));
++  }, [hydrated, visibility, detail, invisibleToday]);
++
+   const effectiveVisibility: Visibility = useMemo(() => {
+     return invisibleToday ? "hidden" : visibility;
+   }, [invisibleToday, visibility]);
+@@ -35,6 +71,10 @@ export default function SettingsPage() {
+     <div className="space-y-4">
+       <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+ 
++      {syncNote && (
++        <div className="text-xs text-zinc-500 dark:text-zinc-400">{syncNote}</div>
++      )}
++
+       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+         <div className="text-sm font-medium">Viditeľnosť dnes</div>
+         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+diff --git a/src/components/friends/FriendsClient.tsx b/src/components/friends/FriendsClient.tsx
+index 29a9320..789f316 100644
+--- a/src/components/friends/FriendsClient.tsx
++++ b/src/components/friends/FriendsClient.tsx
+@@ -2,23 +2,12 @@
+ 
+ import { useEffect, useMemo, useState } from "react";
+ import Link from "next/link";
+-import { getLatestCheckin } from "@/lib/mood/storage";
++import { useRouter } from "next/navigation";
++import { getSupabaseClient } from "@/lib/supabase/client";
++import { getLatestCheckin, localDateISO } from "@/lib/mood/storage";
+ import { loadPrefs } from "@/lib/prefs/storage";
+ import type { FeedDetail, Prefs, Visibility } from "@/lib/prefs/types";
+ 
+-type FriendShare = {
+-  id: string;
+-  name: string;
+-  visibility: Visibility;
+-  invisibleToday: boolean;
+-  detail: FeedDetail;
+-  // Simple shared payload (later: from DB)
+-  color: "green" | "yellow" | "orange" | "red" | "gray";
+-  icon: string;
+-  status: string;
+-  updatedAtLabel: string;
+-};
+-
+ type PingKind = "🫶" | "☕" | "👀";
+ 
+ const PING_KEY = "viora:pings:v1";
+@@ -52,73 +41,217 @@ function effectiveVisibility(p: Pick<Prefs, "visibility" | "invisibleToday">): V
+   return p.invisibleToday ? "hidden" : p.visibility;
+ }
+ 
+-function renderShare(detail: FeedDetail, share: Pick<FriendShare, "icon" | "status">) {
++function renderShare(detail: FeedDetail, share: { icon?: string; status?: string }) {
+   if (detail === "color") return null;
+-  if (detail === "icon") return <span className="text-sm">{share.icon}</span>;
++  if (detail === "icon") return <span className="text-sm">{share.icon ?? "⚪"}</span>;
+   return (
+     <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">
+-      {share.icon} <span className="font-medium">{share.status}</span>
++      {share.icon ?? "⚪"} <span className="font-medium">{share.status ?? "—"}</span>
+     </span>
+   );
+ }
+ 
++type DbVisibility = "public" | "friends" | "hidden";
++
++function uiToDbVisibility(v: Visibility): DbVisibility {
++  return v === "everyone" ? "public" : v;
++}
++
++function dbToUiVisibility(v: DbVisibility): Visibility {
++  return v === "public" ? "everyone" : v;
++}
++
++function toDayLabel(dayISO?: string) {
++  if (!dayISO) return "—";
++  const today = localDateISO(new Date());
++  if (dayISO === today) return "dnes";
++  const y = new Date();
++  y.setDate(y.getDate() - 1);
++  if (dayISO === localDateISO(y)) return "včera";
++  return dayISO;
++}
++
++function generateCode() {
++  const alphabet = "23456789abcdefghjkmnpqrstuvwxyz"; // no confusing chars
++  let out = "";
++  const n = 8;
++  for (let i = 0; i < n; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
++  return out;
++}
++
++type FriendRow = {
++  id: string;
++  name: string;
++  prefs?: { visibility: Visibility; detail: FeedDetail; invisibleToday: boolean };
++  latest?: { day: string; color: string; icon?: string; status?: string };
++};
++
+ export function FriendsClient() {
++  const router = useRouter();
++
+   const [pings, setPings] = useState<Array<{ at: string; to: string; kind: PingKind }>>([]);
+   const [prefs, setPrefs] = useState<Prefs | null>(null);
+ 
+-  const friends = useMemo<FriendShare[]>(
+-    () => [
+-      {
+-        id: "a1",
+-        name: "Nika",
+-        visibility: "friends",
+-        invisibleToday: false,
+-        detail: "text",
+-        color: "green",
+-        icon: "🟢",
+-        status: "Stabilný mód",
+-        updatedAtLabel: "dnes",
+-      },
+-      {
+-        id: "b2",
+-        name: "Matej",
+-        visibility: "friends",
+-        invisibleToday: false,
+-        detail: "icon",
+-        color: "yellow",
+-        icon: "🟡",
+-        status: "Kolísavý mód",
+-        updatedAtLabel: "dnes",
+-      },
+-      {
+-        id: "c3",
+-        name: "Zuzka",
+-        visibility: "friends",
+-        invisibleToday: true,
+-        detail: "text",
+-        color: "orange",
+-        icon: "🟠",
+-        status: "Napätý mód",
+-        updatedAtLabel: "včera",
+-      },
+-      {
+-        id: "d4",
+-        name: "Robo",
+-        visibility: "hidden",
+-        invisibleToday: false,
+-        detail: "text",
+-        color: "red",
+-        icon: "🔴",
+-        status: "Neotravovať",
+-        updatedAtLabel: "dnes",
+-      },
+-    ],
+-    []
+-  );
++  const [loading, setLoading] = useState(true);
++  const [note, setNote] = useState<string | null>(null);
++
++  const [meId, setMeId] = useState<string | null>(null);
++  const [inviteCode, setInviteCode] = useState<string | null>(null);
++  const [acceptCode, setAcceptCode] = useState<string>("");
++
++  const [friends, setFriends] = useState<FriendRow[]>([]);
++
++  const inviteUrl = useMemo(() => {
++    if (!inviteCode) return null;
++    if (typeof window === "undefined") return `/invite/${inviteCode}`;
++    return `${window.location.origin}/invite/${inviteCode}`;
++  }, [inviteCode]);
++
++  const myLatest = useMemo(() => getLatestCheckin("general"), []);
++  const myEffective = prefs ? effectiveVisibility(prefs) : "friends";
+ 
+   useEffect(() => {
+     setPings(loadPings());
+     setPrefs(loadPrefs());
++
++    const supabase = getSupabaseClient();
++    if (!supabase) {
++      setNote("Chýba Supabase ENV. Friends režim potrebuje Supabase.");
++      setLoading(false);
++      return;
++    }
++
++    (async () => {
++      const { data } = await supabase.auth.getUser();
++      const user = data.user;
++      if (!user) {
++        setNote("Nie si prihlásený.");
++        setLoading(false);
++        return;
++      }
++      setMeId(user.id);
++
++      await Promise.all([loadInvite(user.id), loadFriends(user.id)]);
++      setLoading(false);
++    })().catch((e) => {
++      setNote(String(e?.message ?? e));
++      setLoading(false);
++    });
++
++    async function loadInvite(uid: string) {
++      const { data, error } = await supabase
++        .from("invites")
++        .select("code,created_at")
++        .eq("inviter_id", uid)
++        .is("accepted_at", null)
++        .order("created_at", { ascending: false })
++        .limit(1);
++
++      if (error) {
++        setNote(`Invite: ${error.message}`);
++        return;
++      }
++      setInviteCode(data?.[0]?.code ?? null);
++    }
++
++    async function loadFriends(uid: string) {
++      // 1) friendships
++      const { data: rels, error: relErr } = await supabase
++        .from("friendships")
++        .select("user_a,user_b,created_at")
++        .or(`user_a.eq.${uid},user_b.eq.${uid}`);
++
++      if (relErr) {
++        setNote(`Friends: ${relErr.message}`);
++        setFriends([]);
++        return;
++      }
++
++      const friendIds = (rels ?? [])
++        .map((r: any) => (r.user_a === uid ? r.user_b : r.user_a))
++        .filter(Boolean) as string[];
++
++      if (friendIds.length === 0) {
++        setFriends([]);
++        return;
++      }
++
++      // 2) profiles
++      const { data: profs, error: profErr } = await supabase
++        .from("profiles")
++        .select("id,display_name")
++        .in("id", friendIds);
++
++      if (profErr) {
++        setNote(`Profiles: ${profErr.message}`);
++      }
++
++      // 3) prefs (visibility + detail)
++      const { data: prefRows, error: prefErr } = await supabase
++        .from("user_prefs")
++        .select("user_id,visibility,feed_detail,invisible_today")
++        .in("user_id", friendIds);
++
++      if (prefErr) {
++        setNote(`Prefs: ${prefErr.message}`);
++      }
++
++      // 4) latest checkins (client-side reduce)
++      const { data: checks, error: chkErr } = await supabase
++        .from("checkins")
++        .select("user_id,day,color,title,payload")
++        .in("user_id", friendIds)
++        .order("day", { ascending: false })
++        .limit(200);
++
++      if (chkErr) {
++        // If RLS blocks some, that's OK. We'll show them as hidden/no data.
++        setNote((n) => n ?? `Checkins: ${chkErr.message}`);
++      }
++
++      const latestByUser = new Map<string, any>();
++      for (const row of checks ?? []) {
++        if (!latestByUser.has(row.user_id)) latestByUser.set(row.user_id, row);
++      }
++
++      const prefsByUser = new Map<string, any>();
++      for (const p of prefRows ?? []) prefsByUser.set(p.user_id, p);
++
++      const profByUser = new Map<string, any>();
++      for (const p of profs ?? []) profByUser.set(p.id, p);
++
++      const out: FriendRow[] = friendIds.map((id) => {
++        const prof = profByUser.get(id);
++        const p = prefsByUser.get(id);
++        const c = latestByUser.get(id);
++
++        const uiPrefs = p
++          ? {
++              visibility: dbToUiVisibility(p.visibility as DbVisibility),
++              detail: (p.feed_detail as FeedDetail) ?? "icon",
++              invisibleToday: Boolean(p.invisible_today),
++            }
++          : undefined;
++
++        const icon = c?.payload?.icon ?? undefined;
++
++        return {
++          id,
++          name: (prof?.display_name as string) || "(bez mena)",
++          prefs: uiPrefs,
++          latest: c
++            ? {
++                day: String(c.day),
++                color: String(c.color ?? "gray"),
++                icon,
++                status: String(c.title ?? "—"),
++              }
++            : undefined,
++        };
++      });
++
++      setFriends(out);
++    }
+   }, []);
+ 
+   function sendPing(to: string, kind: PingKind) {
+@@ -128,29 +261,106 @@ export function FriendsClient() {
+     savePings(next);
+   }
+ 
+-  const inviteCode = useMemo(() => {
+-    // deterministic-ish code so it doesn't jump every refresh (but doesn't need to be secure in MVP)
+-    const base = "viora-" + (typeof window !== "undefined" ? window.location.host : "local");
+-    let hash = 0;
+-    for (let i = 0; i < base.length; i++) hash = (hash * 31 + base.charCodeAt(i)) >>> 0;
+-    return hash.toString(36).slice(0, 8);
+-  }, []);
+-
+-  const inviteUrl = useMemo(() => {
+-    if (typeof window === "undefined") return `/invite/${inviteCode}`;
+-    return `${window.location.origin}/invite/${inviteCode}`;
+-  }, [inviteCode]);
+-
+   async function copyInvite() {
++    if (!inviteUrl) return;
+     try {
+       await navigator.clipboard.writeText(inviteUrl);
++      setNote("Link skopírovaný ✅");
+     } catch {
+-      // fallback: nothing
++      setNote("Nepodarilo sa kopírovať (skús manuálne). ");
+     }
+   }
+ 
+-  const myLatest = useMemo(() => getLatestCheckin("general"), []);
+-  const myEffective = prefs ? effectiveVisibility(prefs) : "friends";
++  async function createInvite() {
++    const supabase = getSupabaseClient();
++    if (!supabase || !meId) return;
++
++    setNote(null);
++    const code = generateCode();
++
++    const { error } = await supabase.from("invites").insert({ code, inviter_id: meId });
++    if (error) {
++      setNote(`Invite: ${error.message}`);
++      return;
++    }
++    setInviteCode(code);
++    setNote("Invite vytvorený ✅");
++  }
++
++  async function acceptInvite() {
++    const supabase = getSupabaseClient();
++    if (!supabase || !meId) return;
++
++    const code = acceptCode.trim().toLowerCase();
++    if (!code) return;
++
++    setNote(null);
++
++    const { data: updated, error: updErr } = await supabase
++      .from("invites")
++      .update({ invitee_id: meId, accepted_at: new Date().toISOString() })
++      .eq("code", code)
++      .is("accepted_at", null)
++      .is("invitee_id", null)
++      .select("inviter_id,code")
++      .limit(1);
++
++    if (updErr) {
++      setNote(`Accept: ${updErr.message}`);
++      return;
++    }
++
++    const inviterId = (updated?.[0] as any)?.inviter_id as string | undefined;
++    if (!inviterId) {
++      setNote("Kód je neplatný alebo už použitý.");
++      return;
++    }
++
++    const { error: frErr } = await supabase.from("friendships").insert({ user_a: inviterId, user_b: meId });
++    if (frErr) {
++      setNote(`Friendship: ${frErr.message}`);
++      return;
++    }
++
++    setAcceptCode("");
++    setNote("Pridané medzi priateľov ✅");
++
++    // refresh
++    setLoading(true);
++    const uid = meId;
++    const { data: rels } = await supabase
++      .from("friendships")
++      .select("user_a,user_b")
++      .or(`user_a.eq.${uid},user_b.eq.${uid}`);
++
++    const friendIds = (rels ?? [])
++      .map((r: any) => (r.user_a === uid ? r.user_b : r.user_a))
++      .filter(Boolean) as string[];
++
++    if (friendIds.length === 0) {
++      setFriends([]);
++      setLoading(false);
++      return;
++    }
++
++    const { data: profs } = await supabase.from("profiles").select("id,display_name").in("id", friendIds);
++    const profByUser = new Map<string, any>();
++    for (const p of profs ?? []) profByUser.set(p.id, p);
++
++    setFriends(friendIds.map((id) => ({ id, name: profByUser.get(id)?.display_name ?? "(bez mena)" })));
++    setLoading(false);
++
++    // Optional: go to friends list top
++    router.refresh();
++  }
++
++  if (loading) {
++    return (
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
++        <div className="text-sm font-medium">Načítavam priateľov...</div>
++      </div>
++    );
++  }
+ 
+   return (
+     <div className="space-y-4">
+@@ -161,6 +371,12 @@ export function FriendsClient() {
+         </Link>
+       </div>
+ 
++      {note && (
++        <div className="rounded-2xl border border-zinc-200 bg-white/70 p-3 text-sm shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
++          {note}
++        </div>
++      )}
++
+       {prefs && myEffective === "hidden" && (
+         <div className="rounded-2xl border border-fuchsia-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-fuchsia-900/40 dark:bg-zinc-950/40">
+           <div className="text-sm font-medium">Si skrytý dnes</div>
+@@ -175,7 +391,7 @@ export function FriendsClient() {
+           <div>
+             <div className="text-sm font-medium">Tvoj zdieľaný stav</div>
+             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+-              Náhľad toho, čo (v budúcnosti) uvidia priatelia podľa tvojich nastavení.
++              Náhľad podľa tvojich nastavení. Skutočné zdieľanie riadi DB (user_prefs).
+             </p>
+           </div>
+           <Link
+@@ -217,91 +433,138 @@ export function FriendsClient() {
+       </div>
+ 
+       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+-        <div className="text-sm font-medium">Feed</div>
+-        <div className="mt-3 space-y-2">
+-          {friends.map((f) => {
+-            const fEffective = effectiveVisibility({ visibility: f.visibility, invisibleToday: f.invisibleToday });
+-            const isHidden = fEffective === "hidden";
+-            return (
+-              <div
+-                key={f.id}
+-                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950"
+-              >
+-                <div className="flex min-w-0 items-center gap-3">
+-                  <div className={`h-3 w-3 shrink-0 rounded-full ${isHidden ? colorDot.gray : colorDot[f.color]}`} />
+-                  <div className="min-w-0">
+-                    <div className="text-sm font-medium">{f.name}</div>
+-                    <div className="mt-0.5 flex min-w-0 items-center gap-2">
+-                      {isHidden ? (
+-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">skryté • {f.updatedAtLabel}</span>
+-                      ) : (
+-                        <>
+-                          {renderShare(f.detail, f)}
+-                          <span className="text-xs text-zinc-500 dark:text-zinc-400">• {f.updatedAtLabel}</span>
+-                        </>
+-                      )}
++        <div className="flex items-start justify-between gap-3">
++          <div>
++            <div className="text-sm font-medium">Feed</div>
++            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
++              Zobrazuje posledný check-in priateľov podľa ich nastavení (visibility/detail/invisible).
++            </p>
++          </div>
++        </div>
++
++        {friends.length === 0 ? (
++          <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
++            Zatiaľ nemáš priateľov. Smutné, ale opraviteľné: pošli invite.
++          </div>
++        ) : (
++          <div className="mt-3 space-y-2">
++            {friends.map((f) => {
++              const p = f.prefs ?? { visibility: "friends" as Visibility, detail: "icon" as FeedDetail, invisibleToday: false };
++              const eff = effectiveVisibility({ visibility: p.visibility, invisibleToday: p.invisibleToday });
++              const isHidden = eff === "hidden";
++              const color = isHidden ? "gray" : f.latest?.color ?? "gray";
++              const icon = f.latest?.icon;
++              const status = f.latest?.status;
++
++              return (
++                <div
++                  key={f.id}
++                  className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950"
++                >
++                  <div className="flex min-w-0 items-center gap-3">
++                    <div className={`h-3 w-3 shrink-0 rounded-full ${colorDot[color] ?? colorDot.gray}`} />
++                    <div className="min-w-0">
++                      <div className="text-sm font-medium">{f.name}</div>
++                      <div className="mt-0.5 flex min-w-0 items-center gap-2">
++                        {isHidden ? (
++                          <span className="text-xs text-zinc-500 dark:text-zinc-400">skryté</span>
++                        ) : (
++                          <>
++                            {renderShare(p.detail, { icon, status })}
++                            <span className="text-xs text-zinc-500 dark:text-zinc-400">• {toDayLabel(f.latest?.day)}</span>
++                          </>
++                        )}
++                      </div>
+                     </div>
+                   </div>
+-                </div>
+ 
+-                <div className="flex items-center gap-2">
+-                  <button
+-                    type="button"
+-                    onClick={() => sendPing(f.name, "🫶")}
+-                    className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+-                    aria-label="Poslať 🫶"
+-                  >
+-                    🫶
+-                  </button>
+-                  <button
+-                    type="button"
+-                    onClick={() => sendPing(f.name, "☕")}
+-                    className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+-                    aria-label="Poslať ☕"
+-                  >
+-                    ☕
+-                  </button>
+-                  <button
+-                    type="button"
+-                    onClick={() => sendPing(f.name, "👀")}
+-                    className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+-                    aria-label="Poslať 👀"
+-                  >
+-                    👀
+-                  </button>
++                  <div className="flex items-center gap-2">
++                    <button
++                      type="button"
++                      onClick={() => sendPing(f.name, "🫶")}
++                      className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
++                      aria-label="Poslať 🫶"
++                    >
++                      🫶
++                    </button>
++                    <button
++                      type="button"
++                      onClick={() => sendPing(f.name, "☕")}
++                      className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
++                      aria-label="Poslať ☕"
++                    >
++                      ☕
++                    </button>
++                    <button
++                      type="button"
++                      onClick={() => sendPing(f.name, "👀")}
++                      className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
++                      aria-label="Poslať 👀"
++                    >
++                      👀
++                    </button>
++                  </div>
+                 </div>
+-              </div>
+-            );
+-          })}
+-        </div>
+-        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+-          MVP: toto je demo feed. V ďalšej iterácii pôjde všetko do DB a tvoje nastavenia začnú reálne riadiť, čo vidia ostatní.
+-        </p>
++              );
++            })}
++          </div>
++        )}
+       </div>
+ 
+       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+         <div className="text-sm font-medium">Pozvať priateľa</div>
+-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+-          Skopíruj link a pošli ho človeku, ktorý ťa má rád aj bez semaforu.
+-        </p>
++        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Invite link je uložený v DB. Jeden klik a zdieľaš.</p>
++
+         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+           <code className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+-            {inviteUrl}
++            {inviteUrl ?? "(zatiaľ nemáš invite)"}
+           </code>
+-          <Link
+-            href={`/invite/${inviteCode}`}
+-            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+-          >
+-            Otvoriť
+-          </Link>
++
++          {inviteCode ? (
++            <Link
++              href={`/invite/${inviteCode}`}
++              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++            >
++              Otvoriť
++            </Link>
++          ) : (
++            <button
++              type="button"
++              onClick={createInvite}
++              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++            >
++              Vytvoriť invite
++            </button>
++          )}
++
+           <button
+             type="button"
+-            onClick={copyInvite}
++            onClick={inviteCode ? copyInvite : createInvite}
+             className="inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+           >
+-            Kopírovať
++            {inviteCode ? "Kopírovať" : "Vytvoriť + kopírovať"}
+           </button>
+         </div>
++
++        <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
++          <div className="text-sm font-medium">Prijať pozvánku</div>
++          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Máš kód? Sem s ním. Potom to bude obojstranné.</p>
++          <div className="mt-2 flex gap-2">
++            <input
++              value={acceptCode}
++              onChange={(e) => setAcceptCode(e.target.value)}
++              placeholder="napr. 8znakov"
++              className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900"
++            />
++            <button
++              type="button"
++              onClick={acceptInvite}
++              className="rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
++            >
++              Pridať
++            </button>
++          </div>
++        </div>
+       </div>
+ 
+       {pings.length > 0 && (
+@@ -312,14 +575,16 @@ export function FriendsClient() {
+               <div key={idx} className="text-sm text-zinc-700 dark:text-zinc-200">
+                 <span className="mr-2">{p.kind}</span>
+                 <span className="font-medium">{p.to}</span>
+-                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+-                  {new Date(p.at).toLocaleString()}
+-                </span>
++                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{new Date(p.at).toLocaleString()}</span>
+               </div>
+             ))}
+           </div>
+         </div>
+       )}
++
++      <div className="text-xs text-zinc-500 dark:text-zinc-400">
++        Pozn.: Ak v Supabase ešte nemáš spustené migrácie, sprav to. Inak DB feed nebude mať čo čítať.
++      </div>
+     </div>
+   );
+ }
