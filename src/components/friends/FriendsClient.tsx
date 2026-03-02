@@ -8,7 +8,7 @@ import { getLatestCheckin, localDateISO } from "@/lib/mood/storage";
 import { loadPrefs } from "@/lib/prefs/storage";
 import type { FeedDetail, Prefs, Visibility } from "@/lib/prefs/types";
 
-type PingKind = "🫶" | "☕" | "👀";
+type PingKind = "Ä‘ĹşÂ«Â¶" | "Ă˘Ââ€˘" | "Ä‘Ĺşâ€â‚¬";
 
 const PING_KEY = "viora:pings:v1";
 
@@ -43,10 +43,10 @@ function effectiveVisibility(p: Pick<Prefs, "visibility" | "invisibleToday">): V
 
 function renderShare(detail: FeedDetail, share: { icon?: string; status?: string }) {
   if (detail === "color") return null;
-  if (detail === "icon") return <span className="text-sm">{share.icon ?? "⚪"}</span>;
+  if (detail === "icon") return <span className="text-sm">{share.icon ?? "Ă˘ĹˇĹž"}</span>;
   return (
     <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">
-      {share.icon ?? "⚪"} <span className="font-medium">{share.status ?? "—"}</span>
+      {share.icon ?? "Ă˘ĹˇĹž"} <span className="font-medium">{share.status ?? "Ă˘â‚¬â€ť"}</span>
     </span>
   );
 }
@@ -62,12 +62,12 @@ function dbToUiVisibility(v: DbVisibility): Visibility {
 }
 
 function toDayLabel(dayISO?: string) {
-  if (!dayISO) return "—";
+  if (!dayISO) return "Ă˘â‚¬â€ť";
   const today = localDateISO(new Date());
   if (dayISO === today) return "dnes";
   const y = new Date();
   y.setDate(y.getDate() - 1);
-  if (dayISO === localDateISO(y)) return "včera";
+  if (dayISO === localDateISO(y)) return "vĂ„Ĺ¤era";
   return dayISO;
 }
 
@@ -114,9 +114,9 @@ export function FriendsClient() {
     setPings(loadPings());
     setPrefs(loadPrefs());
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient()!;
     if (!supabase) {
-      setNote("Chýba Supabase ENV. Friends režim potrebuje Supabase.");
+      setNote("ChÄ‚Ëťba Supabase ENV. Friends reÄąÄľim potrebuje Supabase.");
       setLoading(false);
       return;
     }
@@ -125,7 +125,7 @@ export function FriendsClient() {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       if (!user) {
-        setNote("Nie si prihlásený.");
+        setNote("Nie si prihlÄ‚Ë‡senÄ‚Ëť.");
         setLoading(false);
         return;
       }
@@ -139,7 +139,7 @@ export function FriendsClient() {
     });
 
     async function loadInvite(uid: string) {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from("invites")
         .select("code,created_at")
         .eq("inviter_id", uid)
@@ -244,7 +244,7 @@ export function FriendsClient() {
                 day: String(c.day),
                 color: String(c.color ?? "gray"),
                 icon,
-                status: String(c.title ?? "—"),
+                status: String(c.title ?? "Ă˘â‚¬â€ť"),
               }
             : undefined,
         };
@@ -265,14 +265,14 @@ export function FriendsClient() {
     if (!inviteUrl) return;
     try {
       await navigator.clipboard.writeText(inviteUrl);
-      setNote("Link skopírovaný ✅");
+      setNote("Link skopÄ‚Â­rovanÄ‚Ëť Ă˘Ĺ›â€¦");
     } catch {
-      setNote("Nepodarilo sa kopírovať (skús manuálne). ");
+      setNote("Nepodarilo sa kopÄ‚Â­rovaÄąÄ„ (skÄ‚Ĺźs manuÄ‚Ë‡lne). ");
     }
   }
 
   async function createInvite() {
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient()!;
     if (!supabase || !meId) return;
 
     setNote(null);
@@ -284,11 +284,11 @@ export function FriendsClient() {
       return;
     }
     setInviteCode(code);
-    setNote("Invite vytvorený ✅");
+    setNote("Invite vytvorenÄ‚Ëť Ă˘Ĺ›â€¦");
   }
 
   async function acceptInvite() {
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient()!;
     if (!supabase || !meId) return;
 
     const code = acceptCode.trim().toLowerCase();
@@ -296,7 +296,7 @@ export function FriendsClient() {
 
     setNote(null);
 
-    const { data: updated, error: updErr } = await supabase
+    const { data: updated, error: updErr } = await supabase!
       .from("invites")
       .update({ invitee_id: meId, accepted_at: new Date().toISOString() })
       .eq("code", code)
@@ -312,7 +312,7 @@ export function FriendsClient() {
 
     const inviterId = (updated?.[0] as any)?.inviter_id as string | undefined;
     if (!inviterId) {
-      setNote("Kód je neplatný alebo už použitý.");
+      setNote("KÄ‚Ĺ‚d je neplatnÄ‚Ëť alebo uÄąÄľ pouÄąÄľitÄ‚Ëť.");
       return;
     }
 
@@ -323,7 +323,7 @@ export function FriendsClient() {
     }
 
     setAcceptCode("");
-    setNote("Pridané medzi priateľov ✅");
+    setNote("PridanÄ‚Â© medzi priateĂ„Äľov Ă˘Ĺ›â€¦");
 
     // refresh
     setLoading(true);
@@ -357,7 +357,7 @@ export function FriendsClient() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="text-sm font-medium">Načítavam priateľov...</div>
+        <div className="text-sm font-medium">NaĂ„Ĺ¤Ä‚Â­tavam priateĂ„Äľov...</div>
       </div>
     );
   }
@@ -379,9 +379,9 @@ export function FriendsClient() {
 
       {prefs && myEffective === "hidden" && (
         <div className="rounded-2xl border border-fuchsia-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-fuchsia-900/40 dark:bg-zinc-950/40">
-          <div className="text-sm font-medium">Si skrytý dnes</div>
+          <div className="text-sm font-medium">Si skrytÄ‚Ëť dnes</div>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-            Tvoje meno sa v feede neukáže. Ľudia budú musieť žiť s neistotou. Strašné.
+            Tvoje meno sa v feede neukÄ‚Ë‡ÄąÄľe. Ă„Ëťudia budÄ‚Ĺź musieÄąÄ„ ÄąÄľiÄąÄ„ s neistotou. StraÄąË‡nÄ‚Â©.
           </p>
         </div>
       )}
@@ -389,9 +389,9 @@ export function FriendsClient() {
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-sm font-medium">Tvoj zdieľaný stav</div>
+            <div className="text-sm font-medium">Tvoj zdieĂ„ÄľanÄ‚Ëť stav</div>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Náhľad podľa tvojich nastavení. Skutočné zdieľanie riadi DB (user_prefs).
+              NÄ‚Ë‡hĂ„Äľad podĂ„Äľa tvojich nastavenÄ‚Â­. SkutoĂ„Ĺ¤nÄ‚Â© zdieĂ„Äľanie riadi DB (user_prefs).
             </p>
           </div>
           <Link
@@ -412,21 +412,21 @@ export function FriendsClient() {
           />
           <div className="min-w-0">
             {myEffective === "hidden" ? (
-              <div className="text-sm font-medium">Skryté</div>
+              <div className="text-sm font-medium">SkrytÄ‚Â©</div>
             ) : prefs ? (
               <div className="flex items-center gap-2">
-                {prefs.detail !== "color" && <span className="text-sm">{myLatest?.result.icon ?? "⚪"}</span>}
+                {prefs.detail !== "color" && <span className="text-sm">{myLatest?.result.icon ?? "Ă˘ĹˇĹž"}</span>}
                 {prefs.detail === "text" ? (
-                  <div className="truncate text-sm font-medium">{myLatest?.result.status ?? "Žiadny záznam"}</div>
+                  <div className="truncate text-sm font-medium">{myLatest?.result.status ?? "ÄąËťiadny zÄ‚Ë‡znam"}</div>
                 ) : (
-                  <div className="truncate text-sm font-medium">{myLatest ? "Aktívny" : "Žiadny záznam"}</div>
+                  <div className="truncate text-sm font-medium">{myLatest ? "AktÄ‚Â­vny" : "ÄąËťiadny zÄ‚Ë‡znam"}</div>
                 )}
               </div>
             ) : (
-              <div className="text-sm font-medium">…</div>
+              <div className="text-sm font-medium">Ă˘â‚¬Â¦</div>
             )}
             <div className="truncate text-xs text-zinc-600 dark:text-zinc-300">
-              {myLatest ? `${myLatest.result.score}/100 • ${myLatest.dateISO}` : "Sprav check-in, nech je čo zdieľať."}
+              {myLatest ? `${myLatest.result.score}/100 Ă˘â‚¬Ë ${myLatest.dateISO}` : "Sprav check-in, nech je Ă„Ĺ¤o zdieĂ„ÄľaÄąÄ„."}
             </div>
           </div>
         </div>
@@ -437,14 +437,14 @@ export function FriendsClient() {
           <div>
             <div className="text-sm font-medium">Feed</div>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Zobrazuje posledný check-in priateľov podľa ich nastavení (visibility/detail/invisible).
+              Zobrazuje poslednÄ‚Ëť check-in priateĂ„Äľov podĂ„Äľa ich nastavenÄ‚Â­ (visibility/detail/invisible).
             </p>
           </div>
         </div>
 
         {friends.length === 0 ? (
           <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-            Zatiaľ nemáš priateľov. Smutné, ale opraviteľné: pošli invite.
+            ZatiaĂ„Äľ nemÄ‚Ë‡ÄąË‡ priateĂ„Äľov. SmutnÄ‚Â©, ale opraviteĂ„ÄľnÄ‚Â©: poÄąË‡li invite.
           </div>
         ) : (
           <div className="mt-3 space-y-2">
@@ -467,11 +467,11 @@ export function FriendsClient() {
                       <div className="text-sm font-medium">{f.name}</div>
                       <div className="mt-0.5 flex min-w-0 items-center gap-2">
                         {isHidden ? (
-                          <span className="text-xs text-zinc-500 dark:text-zinc-400">skryté</span>
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">skrytÄ‚Â©</span>
                         ) : (
                           <>
                             {renderShare(p.detail, { icon, status })}
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">• {toDayLabel(f.latest?.day)}</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Ă˘â‚¬Ë {toDayLabel(f.latest?.day)}</span>
                           </>
                         )}
                       </div>
@@ -481,27 +481,27 @@ export function FriendsClient() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => sendPing(f.name, "🫶")}
+                      onClick={() => sendPing(f.name, "Ä‘ĹşÂ«Â¶")}
                       className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
-                      aria-label="Poslať 🫶"
+                      aria-label="PoslaÄąÄ„ Ä‘ĹşÂ«Â¶"
                     >
-                      🫶
+                      Ä‘ĹşÂ«Â¶
                     </button>
                     <button
                       type="button"
-                      onClick={() => sendPing(f.name, "☕")}
+                      onClick={() => sendPing(f.name, "Ă˘Ââ€˘")}
                       className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
-                      aria-label="Poslať ☕"
+                      aria-label="PoslaÄąÄ„ Ă˘Ââ€˘"
                     >
-                      ☕
+                      Ă˘Ââ€˘
                     </button>
                     <button
                       type="button"
-                      onClick={() => sendPing(f.name, "👀")}
+                      onClick={() => sendPing(f.name, "Ä‘Ĺşâ€â‚¬")}
                       className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
-                      aria-label="Poslať 👀"
+                      aria-label="PoslaÄąÄ„ Ä‘Ĺşâ€â‚¬"
                     >
-                      👀
+                      Ä‘Ĺşâ€â‚¬
                     </button>
                   </div>
                 </div>
@@ -512,12 +512,12 @@ export function FriendsClient() {
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="text-sm font-medium">Pozvať priateľa</div>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Invite link je uložený v DB. Jeden klik a zdieľaš.</p>
+        <div className="text-sm font-medium">PozvaÄąÄ„ priateĂ„Äľa</div>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Invite link je uloÄąÄľenÄ‚Ëť v DB. Jeden klik a zdieĂ„ÄľaÄąË‡.</p>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
           <code className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-            {inviteUrl ?? "(zatiaľ nemáš invite)"}
+            {inviteUrl ?? "(zatiaĂ„Äľ nemÄ‚Ë‡ÄąË‡ invite)"}
           </code>
 
           {inviteCode ? (
@@ -525,7 +525,7 @@ export function FriendsClient() {
               href={`/invite/${inviteCode}`}
               className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >
-              Otvoriť
+              OtvoriÄąÄ„
             </Link>
           ) : (
             <button
@@ -533,7 +533,7 @@ export function FriendsClient() {
               onClick={createInvite}
               className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >
-              Vytvoriť invite
+              VytvoriÄąÄ„ invite
             </button>
           )}
 
@@ -542,13 +542,13 @@ export function FriendsClient() {
             onClick={inviteCode ? copyInvite : createInvite}
             className="inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
-            {inviteCode ? "Kopírovať" : "Vytvoriť + kopírovať"}
+            {inviteCode ? "KopÄ‚Â­rovaÄąÄ„" : "VytvoriÄąÄ„ + kopÄ‚Â­rovaÄąÄ„"}
           </button>
         </div>
 
         <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="text-sm font-medium">Prijať pozvánku</div>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Máš kód? Sem s ním. Potom to bude obojstranné.</p>
+          <div className="text-sm font-medium">PrijaÄąÄ„ pozvÄ‚Ë‡nku</div>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">MÄ‚Ë‡ÄąË‡ kÄ‚Ĺ‚d? Sem s nÄ‚Â­m. Potom to bude obojstrannÄ‚Â©.</p>
           <div className="mt-2 flex gap-2">
             <input
               value={acceptCode}
@@ -561,7 +561,7 @@ export function FriendsClient() {
               onClick={acceptInvite}
               className="rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
             >
-              Pridať
+              PridaÄąÄ„
             </button>
           </div>
         </div>
@@ -569,7 +569,7 @@ export function FriendsClient() {
 
       {pings.length > 0 && (
         <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="text-sm font-medium">Posledné pingy</div>
+          <div className="text-sm font-medium">PoslednÄ‚Â© pingy</div>
           <div className="mt-3 space-y-1">
             {pings.slice(0, 10).map((p, idx) => (
               <div key={idx} className="text-sm text-zinc-700 dark:text-zinc-200">
@@ -583,7 +583,7 @@ export function FriendsClient() {
       )}
 
       <div className="text-xs text-zinc-500 dark:text-zinc-400">
-        Pozn.: Ak v Supabase ešte nemáš spustené migrácie, sprav to. Inak DB feed nebude mať čo čítať.
+        Pozn.: Ak v Supabase eÄąË‡te nemÄ‚Ë‡ÄąË‡ spustenÄ‚Â© migrÄ‚Ë‡cie, sprav to. Inak DB feed nebude maÄąÄ„ Ă„Ĺ¤o Ă„Ĺ¤Ä‚Â­taÄąÄ„.
       </div>
     </div>
   );
