@@ -21,7 +21,7 @@ export function loadPrefs(): Prefs {
     };
 
     // sanity guards
-    if (!["everyone", "friends", "hidden"].includes(merged.visibility)) merged.visibility = defaultPrefs.visibility;
+    if (!["public", "friends", "hidden"].includes(merged.visibility)) merged.visibility = defaultPrefs.visibility;
     if (!["color", "icon", "text"].includes(merged.detail)) merged.detail = defaultPrefs.detail;
     merged.invisibleToday = Boolean(merged.invisibleToday);
 
