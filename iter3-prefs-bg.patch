@@ -1,0 +1,249 @@
+diff -ruN /mnt/data/work/iter3_base/Socialnaapp-main/src/app/settings/page.tsx /mnt/data/work/iter3/Socialnaapp-main/src/app/settings/page.tsx
+--- /mnt/data/work/iter3_base/Socialnaapp-main/src/app/settings/page.tsx	2026-03-01 23:50:20.000000000 +0000
++++ /mnt/data/work/iter3/Socialnaapp-main/src/app/settings/page.tsx	2026-03-01 23:58:40.577488094 +0000
+@@ -1,34 +1,97 @@
+ "use client";
+ 
+-import { useState } from "react";
++import { useEffect, useMemo, useState } from "react";
++import {
++  defaultPrefs,
++  isInvisibleToday,
++  readPrefs,
++  setInvisibleToday,
++  type FeedDetail,
++  type FeedVisibility,
++  type VioraPrefs,
++  writePrefs,
++} from "@/lib/mood/prefs";
++import { localDateISO } from "@/lib/mood/storage";
++
++function Card({ children }: { children: React.ReactNode }) {
++  return (
++    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
++      {children}
++    </div>
++  );
++}
+ 
+ export default function SettingsPage() {
+-  const [visibility, setVisibility] = useState<"everyone" | "friends" | "hidden">("friends");
+-  const [detail, setDetail] = useState<"color" | "icon" | "text">("icon");
++  const today = useMemo(() => localDateISO(), []);
++  const [prefs, setPrefs] = useState<VioraPrefs>(defaultPrefs);
++
++  useEffect(() => {
++    setPrefs(readPrefs());
++  }, []);
++
++  function update(next: Partial<VioraPrefs>) {
++    setPrefs((prev) => {
++      const merged = { ...prev, ...next };
++      writePrefs(merged);
++      return merged;
++    });
++  }
++
++  const invisible = isInvisibleToday(today, prefs);
+ 
+   return (
+     <div className="space-y-4">
+       <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+ 
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+-        <div className="text-sm font-medium">Viditeľnosť dnes</div>
++      <Card>
++        <div className="flex items-start justify-between gap-3">
++          <div>
++            <div className="text-sm font-medium">Invisible today</div>
++            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
++              Keď fakt nemáš náladu. V feede sa dnes nezobrazíš.
++            </p>
++          </div>
++
++          <button
++            type="button"
++            onClick={() => update(setInvisibleToday(today, !invisible, prefs))}
++            className={[
++              "mt-1 inline-flex items-center rounded-full border px-3 py-1 text-sm",
++              invisible
++                ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
++                : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
++            ].join(" ")}
++          >
++            {invisible ? "Zapnuté" : "Vypnuté"}
++          </button>
++        </div>
++
++        {invisible ? (
++          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
++            Dnes si invisible. Ľudia si ťa nevšimnú. Nádhera.
++          </div>
++        ) : null}
++      </Card>
++
++      <Card>
++        <div className="text-sm font-medium">Viditeľnosť</div>
+         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+           Aby to nebolo toxické. Tvoje dáta, tvoja voľba.
+         </p>
+ 
+         <div className="mt-3 grid grid-cols-3 gap-2">
+-          {[
++          {([
+             { id: "everyone", label: "Všetci" },
+             { id: "friends", label: "Priatelia" },
+             { id: "hidden", label: "Skryté" },
+-          ].map((opt) => (
++          ] as const).map((opt) => (
+             <button
+               key={opt.id}
+               type="button"
+-              onClick={() => setVisibility(opt.id as any)}
++              onClick={() => update({ visibility: opt.id as FeedVisibility })}
+               className={[
+                 "rounded-xl border px-3 py-2 text-sm",
+-                visibility === opt.id
++                prefs.visibility === opt.id
+                   ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+                   : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+               ].join(" ")}
+@@ -37,27 +100,27 @@
+             </button>
+           ))}
+         </div>
+-      </div>
++      </Card>
+ 
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
++      <Card>
+         <div className="text-sm font-medium">Detail v feede</div>
+         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+           Čo uvidia ostatní: len farbu, farbu + ikonu, alebo aj krátky text.
+         </p>
+ 
+         <div className="mt-3 grid grid-cols-3 gap-2">
+-          {[
++          {([
+             { id: "color", label: "Farba" },
+             { id: "icon", label: "Ikona" },
+             { id: "text", label: "Text" },
+-          ].map((opt) => (
++          ] as const).map((opt) => (
+             <button
+               key={opt.id}
+               type="button"
+-              onClick={() => setDetail(opt.id as any)}
++              onClick={() => update({ detail: opt.id as FeedDetail })}
+               className={[
+                 "rounded-xl border px-3 py-2 text-sm",
+-                detail === opt.id
++                prefs.detail === opt.id
+                   ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+                   : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+               ].join(" ")}
+@@ -69,10 +132,30 @@
+ 
+         <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+           <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
+-          <div className="mt-1">
+-            {detail === "color" ? "🟡" : detail === "icon" ? "🟡 🧭" : "🟡 Kolísavý mód"}
+-          </div>
++          <div className="mt-1">{prefs.detail === "color" ? "🟡" : prefs.detail === "icon" ? "🟡 🧭" : "🟡 Kolísavý mód"}</div>
+         </div>
++      </Card>
++
++      <Card>
++        <div className="text-sm font-medium">Lokálne dáta</div>
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
++          MVP zatiaľ ukladá check-in históriu do prehliadača.
++        </p>
++
++        <button
++          type="button"
++          onClick={() => {
++            window.localStorage.removeItem("viora.checkins.v1");
++            window.location.reload();
++          }}
++          className="mt-3 inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
++        >
++          Vymazať históriu check-inov
++        </button>
++      </Card>
++
++      <div className="text-xs text-zinc-500 dark:text-zinc-400">
++        Tip: tieto nastavenia sa ukladajú do localStorage. Supabase príde neskôr.
+       </div>
+     </div>
+   );
+diff -ruN /mnt/data/work/iter3_base/Socialnaapp-main/src/components/layout/AppShell.tsx /mnt/data/work/iter3/Socialnaapp-main/src/components/layout/AppShell.tsx
+--- /mnt/data/work/iter3_base/Socialnaapp-main/src/components/layout/AppShell.tsx	2026-03-01 23:50:20.000000000 +0000
++++ /mnt/data/work/iter3/Socialnaapp-main/src/components/layout/AppShell.tsx	2026-03-01 23:57:03.591926640 +0000
+@@ -9,7 +9,7 @@
+     <div className="relative min-h-dvh overflow-x-hidden text-zinc-950 dark:text-zinc-50">
+       {/* Brand background */}
+       <div
+-        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-cover bg-[position:50%_55%] opacity-55 saturate-150 contrast-125 dark:opacity-30"
++        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-auto bg-no-repeat bg-[position:50%_55%] opacity-55 saturate-150 contrast-125 dark:opacity-30"
+         aria-hidden
+       />
+       {/* Chroma wash (keeps the background alive, without killing readability) */}
+diff -ruN /mnt/data/work/iter3_base/Socialnaapp-main/src/lib/mood/prefs.ts /mnt/data/work/iter3/Socialnaapp-main/src/lib/mood/prefs.ts
+--- /mnt/data/work/iter3_base/Socialnaapp-main/src/lib/mood/prefs.ts	1970-01-01 00:00:00.000000000 +0000
++++ /mnt/data/work/iter3/Socialnaapp-main/src/lib/mood/prefs.ts	2026-03-01 23:57:28.364293515 +0000
+@@ -0,0 +1,55 @@
++export type FeedVisibility = "everyone" | "friends" | "hidden";
++export type FeedDetail = "color" | "icon" | "text";
++
++export type VioraPrefs = {
++  /** Default visibility for your daily status in the feed. */
++  visibility: FeedVisibility;
++  /** What others see when your status is visible. */
++  detail: FeedDetail;
++  /** If set to today's local date, you're invisible for the day. */
++  invisibleDateISO: string | null;
++};
++
++const KEY = "viora.prefs.v1";
++
++export const defaultPrefs: VioraPrefs = {
++  visibility: "friends",
++  detail: "icon",
++  invisibleDateISO: null,
++};
++
++function safeParse(json: string | null): Partial<VioraPrefs> | null {
++  if (!json) return null;
++  try {
++    const data = JSON.parse(json) as unknown;
++    if (!data || typeof data !== "object") return null;
++    return data as Partial<VioraPrefs>;
++  } catch {
++    return null;
++  }
++}
++
++export function readPrefs(): VioraPrefs {
++  if (typeof window === "undefined") return defaultPrefs;
++  const partial = safeParse(window.localStorage.getItem(KEY));
++  return {
++    ...defaultPrefs,
++    ...(partial ?? {}),
++  };
++}
++
++export function writePrefs(next: VioraPrefs) {
++  if (typeof window === "undefined") return;
++  window.localStorage.setItem(KEY, JSON.stringify(next));
++}
++
++export function isInvisibleToday(dateISO: string, prefs: VioraPrefs): boolean {
++  return prefs.invisibleDateISO === dateISO;
++}
++
++export function setInvisibleToday(dateISO: string, enabled: boolean, prefs: VioraPrefs): VioraPrefs {
++  return {
++    ...prefs,
++    invisibleDateISO: enabled ? dateISO : null,
++  };
++}
