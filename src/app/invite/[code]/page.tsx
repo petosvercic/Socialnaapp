@@ -1,6 +1,10 @@
-import Link from "next/link";
+"use client";
 
-export default function InvitePage({ params }: { params: { code: string } }) {
+import Link from "next/link";
+import { useParams } from "next/navigation";
+
+export default function InvitePage() {
+  const params = useParams<{ code?: string }>();
   const code = (params?.code ?? "").toString();
 
   return (
@@ -9,7 +13,7 @@ export default function InvitePage({ params }: { params: { code: string } }) {
         <div className="text-sm font-medium text-black/60">Pozvánka</div>
         <h1 className="mt-1 text-2xl font-semibold">Viora invite</h1>
         <p className="mt-2 text-sm text-black/70">
-          Toto je MVP stránka len aby link nepadal na 404. Neskôr tu bude prijatie pozvánky a vytvorenie priateľstva v DB.
+          MVP stránka, aby link nepadal na 404. Neskôr tu bude prijatie pozvánky a vytvorenie priateľstva v DB.
         </p>
 
         <div className="mt-4 rounded-xl border border-black/10 bg-white p-4">
@@ -18,16 +22,10 @@ export default function InvitePage({ params }: { params: { code: string } }) {
         </div>
 
         <div className="mt-5 flex gap-2">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium hover:bg-black/5"
-          >
+          <Link href="/" className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium hover:bg-black/5">
             Späť na Home
           </Link>
-          <Link
-            href="/friends"
-            className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
-          >
+          <Link href="/friends" className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90">
             Priatelia
           </Link>
         </div>
