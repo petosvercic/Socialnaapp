@@ -1,7 +1,0 @@
-diff --git a/src/components/friends/FriendsClient.tsx b/src/components/friends/FriendsClient.tsx
---- a/src/components/friends/FriendsClient.tsx
-+++ b/src/components/friends/FriendsClient.tsx
-@@
--      const { data, error } = await supabase
-+      const { data, error } = await supabase!
-         .from("invites")
