@@ -1,0 +1,2016 @@
+diff --git a/src/components/layout/AppShell.tsx b/src/components/layout/AppShell.tsx
+index 1111111..2222222 100644
+--- a/src/components/layout/AppShell.tsx
++++ b/src/components/layout/AppShell.tsx
+@@ -1,56 +1,56 @@
+-import type { ReactNode } from "react";
+
+-import Link from "next/link";
+
+-import { BottomNav } from "@/components/layout/BottomNav";
+
+-import { VioraMark } from "@/components/brand/VioraMark";
+
+-import { BrandStamp } from "@/components/brand/BrandStamp";
+
+-
+
+-export function AppShell({ children }: { children: ReactNode }) {
+
+-  return (
+
+-    <div className="relative min-h-dvh overflow-x-hidden text-zinc-950 dark:text-zinc-50">
+
+-      {/* Brand background */}
+
+-      <div
+
+-        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-contain bg-center bg-no-repeat opacity-55 saturate-150 contrast-125 dark:opacity-30"
+
+-        aria-hidden
+
+-      />
+
+-      {/* Chroma wash (keeps the background alive, without killing readability) */}
+
+-      <div
+
+-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-indigo-500/10"
+
+-        aria-hidden
+
+-      />
+
+-      {/* Readability overlay */}
+
+-      <div
+
+-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/55 via-white/35 to-white/60 dark:from-zinc-950/80 dark:via-zinc-950/55 dark:to-zinc-950/85"
+
+-        aria-hidden
+
+-      />
+
+-      {/* Tiny dark scrim: makes light backgrounds less "washed out" */}
+
+-      <div
+
+-        className="pointer-events-none absolute inset-0 bg-black/10 dark:bg-black/25"
+
+-        aria-hidden
+
+-      />
+
+-
+
+-      <div className="relative min-h-dvh">
+
+-        <header className="sticky top-0 z-10 border-b border-white/30 bg-white/35 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/35">
+
+-          <div className="mx-auto flex w-full max-w-screen-sm items-center justify-between px-4 py-3">
+
+-            <Link
+
+-              href="/"
+
+-              className="flex items-center gap-2 font-semibold tracking-tight"
+
+-              aria-label="Viora"
+
+-            >
+
+-              <VioraMark className="h-6 w-6" />
+
+-              <span>Viora</span>
+
+-            </Link>
+
+-            <div className="text-xs text-zinc-600 dark:text-zinc-300">MVP</div>
+
+-          </div>
+
+-        </header>
+
+-
+
+-        <main className="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-4">
+
+-          {children}
+
+-        </main>
+
+-
+
+-        <BrandStamp />
+
+-
+
+-        <BottomNav />
+
+-      </div>
+
+-    </div>
+
+-  );
+
+-}
+
++import type { ReactNode } from "react";
+
++import Link from "next/link";
+
++import { BottomNav } from "@/components/layout/BottomNav";
+
++import { VioraMark } from "@/components/brand/VioraMark";
+
++import { BrandStamp } from "@/components/brand/BrandStamp";
+
++
+
++export function AppShell({ children }: { children: ReactNode }) {
+
++  return (
+
++    <div className="relative min-h-dvh overflow-x-hidden text-zinc-950 dark:text-zinc-50">
+
++      {/* Brand background */}
+
++      <div
+
++        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-cover bg-center bg-no-repeat opacity-55 saturate-150 contrast-125 dark:opacity-30"
+
++        aria-hidden
+
++      />
+
++      {/* Chroma wash (keeps the background alive, without killing readability) */}
+
++      <div
+
++        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-indigo-500/10"
+
++        aria-hidden
+
++      />
+
++      {/* Readability overlay */}
+
++      <div
+
++        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/55 via-white/35 to-white/60 dark:from-zinc-950/80 dark:via-zinc-950/55 dark:to-zinc-950/85"
+
++        aria-hidden
+
++      />
+
++      {/* Tiny dark scrim: makes light backgrounds less "washed out" */}
+
++      <div
+
++        className="pointer-events-none absolute inset-0 bg-black/10 dark:bg-black/25"
+
++        aria-hidden
+
++      />
+
++
+
++      <div className="relative min-h-dvh">
+
++        <header className="sticky top-0 z-10 border-b border-white/30 bg-white/35 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/35">
+
++          <div className="mx-auto flex w-full max-w-screen-sm items-center justify-between px-4 py-3">
+
++            <Link
+
++              href="/"
+
++              className="flex items-center gap-2 font-semibold tracking-tight"
+
++              aria-label="Viora"
+
++            >
+
++              <VioraMark className="h-6 w-6" />
+
++              <span>Viora</span>
+
++            </Link>
+
++            <div className="text-xs text-zinc-600 dark:text-zinc-300">MVP</div>
+
++          </div>
+
++        </header>
+
++
+
++        <main className="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-4">
+
++          {children}
+
++        </main>
+
++
+
++        <BrandStamp />
+
++
+
++        <BottomNav />
+
++      </div>
+
++    </div>
+
++  );
+
++}
+
+diff --git a/src/app/settings/page.tsx b/src/app/settings/page.tsx
+index 1111111..2222222 100644
+--- a/src/app/settings/page.tsx
++++ b/src/app/settings/page.tsx
+@@ -1,147 +1,207 @@
+-"use client";
+
+-
+
+-import { useEffect, useMemo, useState } from "react";
+
+-import type { FeedDetail, Visibility } from "@/lib/prefs/types";
+
+-import { defaultPrefs } from "@/lib/prefs/types";
+
+-import { loadPrefs, resetPrefs, updatePrefs } from "@/lib/prefs/storage";
+
+-
+
+-export default function SettingsPage() {
+
+-  const [hydrated, setHydrated] = useState(false);
+
+-  const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
+
+-  const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
+
+-  const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
+
+-
+
+-  useEffect(() => {
+
+-    const prefs = loadPrefs();
+
+-    setVisibility(prefs.visibility);
+
+-    setDetail(prefs.detail);
+
+-    setInvisibleToday(prefs.invisibleToday);
+
+-    setHydrated(true);
+
+-  }, []);
+
+-
+
+-  useEffect(() => {
+
+-    if (!hydrated) return;
+
+-    updatePrefs({ visibility, detail, invisibleToday });
+
+-  }, [hydrated, visibility, detail, invisibleToday]);
+
+-
+
+-  const effectiveVisibility: Visibility = useMemo(() => {
+
+-    return invisibleToday ? "hidden" : visibility;
+
+-  }, [invisibleToday, visibility]);
+
+-
+
+-  return (
+
+-    <div className="space-y-4">
+
+-      <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+
+-
+
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-        <div className="text-sm font-medium">Viditeľnosť dnes</div>
+
+-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
+-          Aby to nebolo toxické. Tvoje dáta, tvoja voľba.
+
+-        </p>
+
+-
+
+-        <label className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
+-          <div>
+
+-            <div className="font-medium">Invisible today</div>
+
+-            <div className="text-xs text-zinc-600 dark:text-zinc-300">
+
+-              Skryje ťa z feedu (bez vysvetľovania ľuďom).
+
+-            </div>
+
+-          </div>
+
+-          <input
+
+-            type="checkbox"
+
+-            checked={invisibleToday}
+
+-            onChange={(e) => setInvisibleToday(e.target.checked)}
+
+-            className="h-5 w-5 accent-zinc-950 dark:accent-white"
+
+-            aria-label="Invisible today"
+
+-          />
+
+-        </label>
+
+-
+
+-        <div className="mt-3 grid grid-cols-3 gap-2">
+
+-          {[
+
+-            { id: "everyone", label: "Všetci" },
+
+-            { id: "friends", label: "Priatelia" },
+
+-            { id: "hidden", label: "Skryté" },
+
+-          ].map((opt) => (
+
+-            <button
+
+-              key={opt.id}
+
+-              type="button"
+
+-              onClick={() => setVisibility(opt.id as Visibility)}
+
+-              className={[
+
+-                "rounded-xl border px-3 py-2 text-sm",
+
+-                effectiveVisibility === opt.id
+
+-                  ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+
+-                  : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+
+-              ].join(" ")}
+
+-            >
+
+-              {opt.label}
+
+-            </button>
+
+-          ))}
+
+-        </div>
+
+-
+
+-        <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
+-          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Aktuálne</div>
+
+-          <div className="mt-1">
+
+-            {effectiveVisibility === "hidden"
+
+-              ? "Skryté"
+
+-              : effectiveVisibility === "friends"
+
+-              ? "Len priatelia"
+
+-              : "Všetci"}
+
+-          </div>
+
+-        </div>
+
+-      </div>
+
+-
+
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-        <div className="text-sm font-medium">Detail v feede</div>
+
+-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
+-          Čo uvidia ostatní: len farbu, farbu + ikonu, alebo aj krátky text.
+
+-        </p>
+
+-
+
+-        <div className="mt-3 grid grid-cols-3 gap-2">
+
+-          {[
+
+-            { id: "color", label: "Farba" },
+
+-            { id: "icon", label: "Ikona" },
+
+-            { id: "text", label: "Text" },
+
+-          ].map((opt) => (
+
+-            <button
+
+-              key={opt.id}
+
+-              type="button"
+
+-              onClick={() => setDetail(opt.id as FeedDetail)}
+
+-              className={[
+
+-                "rounded-xl border px-3 py-2 text-sm",
+
+-                detail === opt.id
+
+-                  ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+
+-                  : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+
+-              ].join(" ")}
+
+-            >
+
+-              {opt.label}
+
+-            </button>
+
+-          ))}
+
+-        </div>
+
+-
+
+-        <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
+-          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
+
+-          <div className="mt-1">
+
+-            {detail === "color" ? "🟡" : detail === "icon" ? "🟡 🧭" : "🟡 Kolísavý mód"}
+
+-          </div>
+
+-        </div>
+
+-      </div>
+
+-
+
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-        <div className="text-sm font-medium">Reset</div>
+
+-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
+-          Ak si to naklikal v hneve. Stáva sa. Ľuďom.
+
+-        </p>
+
+-        <button
+
+-          type="button"
+
+-          onClick={() => {
+
+-            const p = resetPrefs();
+
+-            setVisibility(p.visibility);
+
+-            setDetail(p.detail);
+
+-            setInvisibleToday(p.invisibleToday);
+
+-          }}
+
+-          className="mt-3 inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+
+-        >
+
+-          Resetovať nastavenia
+
+-        </button>
+
+-      </div>
+
+-    </div>
+
+-  );
+
+-}
+
++"use client";
+
++
+
++import { useEffect, useMemo, useState } from "react";
+
++import type { FeedDetail, Prefs, Visibility } from "@/lib/prefs/types";
+
++import { defaultPrefs } from "@/lib/prefs/types";
+
++import { loadPrefs, resetPrefs, updatePrefs } from "@/lib/prefs/storage";
+
++
+
++function samePrefs(a: Prefs, b: Prefs) {
+
++  return a.visibility === b.visibility && a.detail === b.detail && a.invisibleToday === b.invisibleToday;
+
++}
+
++
+
++export default function SettingsPage() {
+
++  const [hydrated, setHydrated] = useState(false);
+
++
+
++  const [saved, setSaved] = useState<Prefs>(defaultPrefs);
+
++
+
++  const [visibility, setVisibility] = useState<Visibility>(defaultPrefs.visibility);
+
++  const [detail, setDetail] = useState<FeedDetail>(defaultPrefs.detail);
+
++  const [invisibleToday, setInvisibleToday] = useState<boolean>(defaultPrefs.invisibleToday);
+
++
+
++  useEffect(() => {
+
++    const prefs = loadPrefs();
+
++    setSaved(prefs);
+
++    setVisibility(prefs.visibility);
+
++    setDetail(prefs.detail);
+
++    setInvisibleToday(prefs.invisibleToday);
+
++    setHydrated(true);
+
++  }, []);
+
++
+
++  const draft: Prefs = useMemo(
+
++    () => ({ ...saved, visibility, detail, invisibleToday }),
+
++    [saved, visibility, detail, invisibleToday]
+
++  );
+
++
+
++  const dirty = useMemo(() => hydrated && !samePrefs(draft, saved), [draft, hydrated, saved]);
+
++
+
++  const effectiveVisibility: Visibility = useMemo(() => {
+
++    return invisibleToday ? "hidden" : visibility;
+
++  }, [invisibleToday, visibility]);
+
++
+
++  function saveNow() {
+
++    const next = updatePrefs({ visibility, detail, invisibleToday });
+
++    setSaved(next);
+
++  }
+
++
+
++  function discard() {
+
++    setVisibility(saved.visibility);
+
++    setDetail(saved.detail);
+
++    setInvisibleToday(saved.invisibleToday);
+
++  }
+
++
+
++  return (
+
++    <div className="space-y-4">
+
++      <div className="flex items-center justify-between">
+
++        <h1 className="text-lg font-semibold tracking-tight">Nastavenia</h1>
+
++
+
++        <div className="flex items-center gap-2">
+
++          {dirty ? (
+
++            <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+
++              Neuložené
+
++            </span>
+
++          ) : (
+
++            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
+
++              Uložené
+
++            </span>
+
++          )}
+
++          <button
+
++            type="button"
+
++            onClick={saveNow}
+
++            disabled={!dirty}
+
++            className={[
+
++              "inline-flex rounded-xl px-4 py-2 text-sm font-medium",
+
++              dirty
+
++                ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+
++                : "cursor-not-allowed border border-zinc-200 bg-white text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500",
+
++            ].join(" ")}
+
++          >
+
++            Potvrdiť
+
++          </button>
+
++          <button
+
++            type="button"
+
++            onClick={discard}
+
++            disabled={!dirty}
+
++            className={[
+
++              "inline-flex rounded-xl border px-4 py-2 text-sm font-medium",
+
++              dirty
+
++                ? "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+
++                : "cursor-not-allowed border-zinc-200 bg-white text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500",
+
++            ].join(" ")}
+
++          >
+
++            Zrušiť
+
++          </button>
+
++        </div>
+
++      </div>
+
++
+
++      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+
++        Zmeny sa uložia až po kliknutí na <span className="font-medium">Potvrdiť</span>. (Áno, ľudia si to pýtajú.)
+
++      </p>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Viditeľnosť dnes</div>
+
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
++          Aby to nebolo toxické. Tvoje dáta, tvoja voľba.
+
++        </p>
+
++
+
++        <label className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
++          <div>
+
++            <div className="font-medium">Invisible today</div>
+
++            <div className="text-xs text-zinc-600 dark:text-zinc-300">
+
++              Skryje ťa z feedu (bez vysvetľovania ľuďom).
+
++            </div>
+
++          </div>
+
++          <input
+
++            type="checkbox"
+
++            checked={invisibleToday}
+
++            onChange={(e) => setInvisibleToday(e.target.checked)}
+
++            className="h-5 w-5 accent-zinc-950 dark:accent-white"
+
++            aria-label="Invisible today"
+
++          />
+
++        </label>
+
++
+
++        <div className="mt-3 grid grid-cols-3 gap-2">
+
++          {[
+
++            { id: "everyone", label: "Všetci" },
+
++            { id: "friends", label: "Priatelia" },
+
++            { id: "hidden", label: "Skryté" },
+
++          ].map((opt) => (
+
++            <button
+
++              key={opt.id}
+
++              type="button"
+
++              onClick={() => setVisibility(opt.id as Visibility)}
+
++              className={[
+
++                "rounded-xl border px-3 py-2 text-sm",
+
++                effectiveVisibility === opt.id
+
++                  ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+
++                  : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+
++              ].join(" ")}
+
++            >
+
++              {opt.label}
+
++            </button>
+
++          ))}
+
++        </div>
+
++
+
++        <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
++          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Aktuálne</div>
+
++          <div className="mt-1">
+
++            {effectiveVisibility === "hidden" ? "Skryté" : effectiveVisibility === "friends" ? "Len priatelia" : "Všetci"}
+
++          </div>
+
++        </div>
+
++      </div>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Detail v feede</div>
+
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
++          Čo uvidia ostatní o tebe: len farbu, farbu + ikonu, alebo aj krátky text.
+
++        </p>
+
++
+
++        <div className="mt-3 grid grid-cols-3 gap-2">
+
++          {[
+
++            { id: "color", label: "Farba" },
+
++            { id: "icon", label: "Ikona" },
+
++            { id: "text", label: "Text" },
+
++          ].map((opt) => (
+
++            <button
+
++              key={opt.id}
+
++              type="button"
+
++              onClick={() => setDetail(opt.id as FeedDetail)}
+
++              className={[
+
++                "rounded-xl border px-3 py-2 text-sm",
+
++                detail === opt.id
+
++                  ? "border-zinc-900 bg-zinc-950 text-white dark:border-zinc-200 dark:bg-white dark:text-zinc-950"
+
++                  : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+
++              ].join(" ")}
+
++            >
+
++              {opt.label}
+
++            </button>
+
++          ))}
+
++        </div>
+
++
+
++        <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
++          <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Náhľad</div>
+
++          <div className="mt-1">
+
++            {detail === "color" ? "🟡" : detail === "icon" ? "🟡 🧭" : "🟡 Kolísavý mód"}
+
++          </div>
+
++        </div>
+
++      </div>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Reset</div>
+
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Ak si to naklikal v hneve. Stáva sa. Ľuďom.</p>
+
++        <button
+
++          type="button"
+
++          onClick={() => {
+
++            const p = resetPrefs();
+
++            setSaved(p);
+
++            setVisibility(p.visibility);
+
++            setDetail(p.detail);
+
++            setInvisibleToday(p.invisibleToday);
+
++          }}
+
++          className="mt-3 inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+
++        >
+
++          Resetovať nastavenia
+
++        </button>
+
++      </div>
+
++    </div>
+
++  );
+
++}
+
+diff --git a/src/components/friends/FriendsClient.tsx b/src/components/friends/FriendsClient.tsx
+index 1111111..2222222 100644
+--- a/src/components/friends/FriendsClient.tsx
++++ b/src/components/friends/FriendsClient.tsx
+@@ -1,162 +1,329 @@
+-"use client";
+
+-
+
+-import { useEffect, useMemo, useState } from "react";
+
+-import Link from "next/link";
+
+-
+
+-type FriendState = {
+
+-  id: string;
+
+-  name: string;
+
+-  color: "green" | "yellow" | "orange" | "red" | "gray";
+
+-  label: string;
+
+-  updatedAt: string;
+
+-};
+
+-
+
+-type PingKind = "🫶" | "☕" | "👀";
+
+-
+
+-const PING_KEY = "viora:pings:v1";
+
+-
+
+-function chipColor(color: FriendState["color"]) {
+
+-  switch (color) {
+
+-    case "green":
+
+-      return "bg-emerald-500";
+
+-    case "yellow":
+
+-      return "bg-yellow-400";
+
+-    case "orange":
+
+-      return "bg-orange-500";
+
+-    case "red":
+
+-      return "bg-rose-500";
+
+-    default:
+
+-      return "bg-zinc-300 dark:bg-zinc-700";
+
+-  }
+
+-}
+
+-
+
+-function loadPings(): Array<{ at: string; to: string; kind: PingKind }> {
+
+-  if (typeof window === "undefined") return [];
+
+-  try {
+
+-    const raw = window.localStorage.getItem(PING_KEY);
+
+-    return raw ? (JSON.parse(raw) as any[]) : [];
+
+-  } catch {
+
+-    return [];
+
+-  }
+
+-}
+
+-
+
+-function savePings(rows: Array<{ at: string; to: string; kind: PingKind }>) {
+
+-  if (typeof window === "undefined") return;
+
+-  try {
+
+-    window.localStorage.setItem(PING_KEY, JSON.stringify(rows.slice(0, 25)));
+
+-  } catch {}
+
+-}
+
+-
+
+-export function FriendsClient() {
+
+-  const [pings, setPings] = useState<Array<{ at: string; to: string; kind: PingKind }>>([]);
+
+-
+
+-  const friends = useMemo<FriendState[]>(
+
+-    () => [
+
+-      { id: "a1", name: "Nika", color: "green", label: "v pohode", updatedAt: "dnes" },
+
+-      { id: "b2", name: "Matej", color: "yellow", label: "kolísavý mód", updatedAt: "dnes" },
+
+-      { id: "c3", name: "Zuzka", color: "orange", label: "preťažená", updatedAt: "včera" },
+
+-      { id: "d4", name: "Robo", color: "red", label: "neotravovať", updatedAt: "dnes" },
+
+-    ],
+
+-    []
+
+-  );
+
+-
+
+-  useEffect(() => {
+
+-    setPings(loadPings());
+
+-  }, []);
+
+-
+
+-  function sendPing(to: string, kind: PingKind) {
+
+-    const row = { at: new Date().toISOString(), to, kind };
+
+-    const next = [row, ...pings];
+
+-    setPings(next);
+
+-    savePings(next);
+
+-  }
+
+-
+
+-  const inviteCode = useMemo(() => {
+
+-    // deterministic-ish code so it doesn't jump every refresh (but doesn't need to be secure in MVP)
+
+-    const base = "viora-" + (typeof window !== "undefined" ? window.location.host : "local");
+
+-    let hash = 0;
+
+-    for (let i = 0; i < base.length; i++) hash = (hash * 31 + base.charCodeAt(i)) >>> 0;
+
+-    return hash.toString(36).slice(0, 8);
+
+-  }, []);
+
+-
+
+-  const inviteUrl = useMemo(() => {
+
+-    if (typeof window === "undefined") return `/invite/${inviteCode}`;
+
+-    return `${window.location.origin}/invite/${inviteCode}`;
+
+-  }, [inviteCode]);
+
+-
+
+-  async function copyInvite() {
+
+-    try {
+
+-      await navigator.clipboard.writeText(inviteUrl);
+
+-    } catch {
+
+-      // fallback: nothing
+
+-    }
+
+-  }
+
+-
+
+-  return (
+
+-    <div className="space-y-4">
+
+-      <div className="flex items-center justify-between">
+
+-        <h1 className="text-lg font-semibold tracking-tight">Priatelia</h1>
+
+-        <Link href="/settings" className="text-sm text-zinc-600 hover:underline dark:text-zinc-300">
+
+-          Nastavenia
+
+-        </Link>
+
+-      </div>
+
+-
+
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-        <div className="text-sm font-medium">Feed</div>
+
+-        <div className="mt-3 space-y-2">
+
+-          {friends.map((f) => (
+
+-            <div key={f.id} className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+
+-              <div className="flex items-center gap-3">
+
+-                <div className={`h-3 w-3 rounded-full ${chipColor(f.color)}`} />
+
+-                <div>
+
+-                  <div className="text-sm font-medium">{f.name}</div>
+
+-                  <div className="text-xs text-zinc-600 dark:text-zinc-300">{f.label} • {f.updatedAt}</div>
+
+-                </div>
+
+-              </div>
+
+-              <div className="flex items-center gap-2">
+
+-                <button type="button" onClick={() => sendPing(f.name, "🫶")} className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900">🫶</button>
+
+-                <button type="button" onClick={() => sendPing(f.name, "☕")} className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900">☕</button>
+
+-                <button type="button" onClick={() => sendPing(f.name, "👀")} className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900">👀</button>
+
+-              </div>
+
+-            </div>
+
+-          ))}
+
+-        </div>
+
+-        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+
+-          MVP: toto je demo feed. Neskôr: Supabase + reálne stavy + rešpektovanie viditeľnosti.
+
+-        </p>
+
+-      </div>
+
+-
+
+-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-        <div className="text-sm font-medium">Pozvať priateľa</div>
+
+-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Skopíruj link a pošli ho človeku, ktorý ťa má rád aj bez semaforu.</p>
+
+-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+
+-          <code className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+
+-            {inviteUrl}
+
+-          </code>
+
+-          <button
+
+-            type="button"
+
+-            onClick={copyInvite}
+
+-            className="inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+
+-          >
+
+-            Kopírovať
+
+-          </button>
+
+-        </div>
+
+-      </div>
+
+-
+
+-      {pings.length > 0 && (
+
+-        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
+-          <div className="text-sm font-medium">Posledné pingy</div>
+
+-          <div className="mt-3 space-y-1">
+
+-            {pings.slice(0, 10).map((p, idx) => (
+
+-              <div key={idx} className="text-sm text-zinc-700 dark:text-zinc-200">
+
+-                <span className="mr-2">{p.kind}</span>
+
+-                <span className="font-medium">{p.to}</span>
+
+-                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{new Date(p.at).toLocaleString()}</span>
+
+-              </div>
+
+-            ))}
+
+-          </div>
+
+-        </div>
+
+-      )}
+
+-    </div>
+
+-  );
+
+-}
+
++"use client";
+
++
+
++import { useEffect, useMemo, useState } from "react";
+
++import Link from "next/link";
+
++import type { FeedDetail, Visibility } from "@/lib/prefs/types";
+
++import { loadPrefs } from "@/lib/prefs/storage";
+
++import { getLatestCheckin } from "@/lib/mood/storage";
+
++
+
++type SharePrefs = {
+
++  visibility: Visibility;
+
++  detail: FeedDetail;
+
++  invisibleToday: boolean;
+
++};
+
++
+
++type FriendState = {
+
++  id: string;
+
++  name: string;
+
++  color: "green" | "yellow" | "orange" | "red" | "gray";
+
++  label: string;
+
++  icon: string;
+
++  updatedAt: string;
+
++  share: SharePrefs;
+
++};
+
++
+
++type PingKind = "🫶" | "☕" | "👀";
+
++
+
++const PING_KEY = "viora:pings:v1";
+
++
+
++function chipColor(color: FriendState["color"]) {
+
++  switch (color) {
+
++    case "green":
+
++      return "bg-emerald-500";
+
++    case "yellow":
+
++      return "bg-yellow-400";
+
++    case "orange":
+
++      return "bg-orange-500";
+
++    case "red":
+
++      return "bg-rose-500";
+
++    default:
+
++      return "bg-zinc-300 dark:bg-zinc-700";
+
++  }
+
++}
+
++
+
++function loadPings(): Array<{ at: string; to: string; kind: PingKind }> {
+
++  if (typeof window === "undefined") return [];
+
++  try {
+
++    const raw = window.localStorage.getItem(PING_KEY);
+
++    return raw ? (JSON.parse(raw) as any[]) : [];
+
++  } catch {
+
++    return [];
+
++  }
+
++}
+
++
+
++function savePings(rows: Array<{ at: string; to: string; kind: PingKind }>) {
+
++  if (typeof window === "undefined") return;
+
++  try {
+
++    window.localStorage.setItem(PING_KEY, JSON.stringify(rows.slice(0, 25)));
+
++  } catch {}
+
++}
+
++
+
++function renderSharedLine(f: FriendState) {
+
++  // What the FRIEND shares about themselves (not your choice).
+
++  if (f.share.invisibleToday || f.share.visibility === "hidden") {
+
++    return <span className="text-xs text-zinc-500 dark:text-zinc-400">skrytý dnes</span>;
+
++  }
+
++
+
++  if (f.share.detail === "color") {
+
++    return <span className="text-xs text-zinc-500 dark:text-zinc-400">{f.updatedAt}</span>;
+
++  }
+
++
+
++  if (f.share.detail === "icon") {
+
++    return (
+
++      <span className="text-xs text-zinc-600 dark:text-zinc-300">
+
++        {f.icon} • {f.updatedAt}
+
++      </span>
+
++    );
+
++  }
+
++
+
++  return (
+
++    <span className="text-xs text-zinc-600 dark:text-zinc-300">
+
++      {f.label} • {f.updatedAt}
+
++    </span>
+
++  );
+
++}
+
++
+
++function renderMySharedPreview(detail: FeedDetail, icon: string, status: string, colorEmoji: string) {
+
++  if (detail === "color") return <span>{colorEmoji}</span>;
+
++  if (detail === "icon") return <span>{colorEmoji} {icon}</span>;
+
++  return <span>{colorEmoji} {status}</span>;
+
++}
+
++
+
++function colorEmoji(color: "green" | "yellow" | "orange" | "red") {
+
++  switch (color) {
+
++    case "green": return "🟢";
+
++    case "yellow": return "🟡";
+
++    case "orange": return "🟠";
+
++    case "red": return "🔴";
+
++  }
+
++}
+
++
+
++export function FriendsClient() {
+
++  const [pings, setPings] = useState<Array<{ at: string; to: string; kind: PingKind }>>([]);
+
++  const [prefs, setPrefs] = useState(() => loadPrefs());
+
++
+
++  const latest = useMemo(() => getLatestCheckin("general"), []);
+
++  const myEffectiveVisibility: Visibility = prefs.invisibleToday ? "hidden" : prefs.visibility;
+
++
+
++  const friends = useMemo<FriendState[]>(
+
++    () => [
+
++      {
+
++        id: "a1",
+
++        name: "Nika",
+
++        color: "green",
+
++        label: "v pohode",
+
++        icon: "🌿",
+
++        updatedAt: "dnes",
+
++        share: { visibility: "friends", detail: "icon", invisibleToday: false },
+
++      },
+
++      {
+
++        id: "b2",
+
++        name: "Matej",
+
++        color: "yellow",
+
++        label: "kolísavý mód",
+
++        icon: "🧭",
+
++        updatedAt: "dnes",
+
++        share: { visibility: "friends", detail: "text", invisibleToday: false },
+
++      },
+
++      {
+
++        id: "c3",
+
++        name: "Zuzka",
+
++        color: "orange",
+
++        label: "preťažená",
+
++        icon: "🔥",
+
++        updatedAt: "včera",
+
++        share: { visibility: "everyone", detail: "color", invisibleToday: false },
+
++      },
+
++      {
+
++        id: "d4",
+
++        name: "Robo",
+
++        color: "red",
+
++        label: "neotravovať",
+
++        icon: "🧱",
+
++        updatedAt: "dnes",
+
++        share: { visibility: "hidden", detail: "text", invisibleToday: true },
+
++      },
+
++    ],
+
++    []
+
++  );
+
++
+
++  useEffect(() => {
+
++    setPings(loadPings());
+
++    setPrefs(loadPrefs());
+
++  }, []);
+
++
+
++  function sendPing(to: string, kind: PingKind) {
+
++    const row = { at: new Date().toISOString(), to, kind };
+
++    const next = [row, ...pings];
+
++    setPings(next);
+
++    savePings(next);
+
++  }
+
++
+
++  const inviteCode = useMemo(() => {
+
++    const base = "viora-" + (typeof window !== "undefined" ? window.location.host : "local");
+
++    let hash = 0;
+
++    for (let i = 0; i < base.length; i++) hash = (hash * 31 + base.charCodeAt(i)) >>> 0;
+
++    return hash.toString(36).slice(0, 8);
+
++  }, []);
+
++
+
++  const inviteUrl = useMemo(() => {
+
++    if (typeof window === "undefined") return `/invite/${inviteCode}`;
+
++    return `${window.location.origin}/invite/${inviteCode}`;
+
++  }, [inviteCode]);
+
++
+
++  async function copyInvite() {
+
++    try {
+
++      await navigator.clipboard.writeText(inviteUrl);
+
++    } catch {
+
++      // ignore
+
++    }
+
++  }
+
++
+
++  const myPreview = useMemo(() => {
+
++    if (!latest) {
+
++      return { colorEmoji: "⚪", icon: "", status: "Žiadny záznam" };
+
++    }
+
++    return {
+
++      colorEmoji: colorEmoji(latest.result.color),
+
++      icon: latest.result.icon,
+
++      status: latest.result.status,
+
++    };
+
++  }, [latest]);
+
++
+
++  return (
+
++    <div className="space-y-4">
+
++      <div className="flex items-center justify-between">
+
++        <h1 className="text-lg font-semibold tracking-tight">Priatelia</h1>
+
++        <Link href="/settings" className="text-sm text-zinc-600 hover:underline dark:text-zinc-300">
+
++          Nastavenia
+
++        </Link>
+
++      </div>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Tvoj zdieľaný stav</div>
+
++        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
++          Toto je to, čo by dnes videli ostatní. (Nie, zatiaľ to nepushujeme do DB.)
+
++        </p>
+
++
+
++        <div className="mt-3 flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
++          <div className="flex items-center gap-3">
+
++            <div className="h-3 w-3 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+
++            <div>
+
++              <div className="text-sm font-medium">
+
++                {myEffectiveVisibility === "hidden" ? "Skrytý dnes" : "Viditeľný"}
+
++              </div>
+
++              <div className="text-xs text-zinc-600 dark:text-zinc-300">
+
++                {myEffectiveVisibility === "hidden"
+
++                  ? "Invisible today alebo Skryté."
+
++                  : "Zdieľaš: " + (prefs.detail === "color" ? "farbu" : prefs.detail === "icon" ? "ikonu" : "text") }
+
++              </div>
+
++            </div>
+
++          </div>
+
++
+
++          <div className="text-sm">
+
++            {myEffectiveVisibility === "hidden" ? (
+
++              <span className="text-zinc-500 dark:text-zinc-400">—</span>
+
++            ) : (
+
++              renderMySharedPreview(prefs.detail, myPreview.icon, myPreview.status, myPreview.colorEmoji)
+
++            )}
+
++          </div>
+
++        </div>
+
++
+
++        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+
++          Pozn.: Nastavenia menia <span className="font-medium">čo zdieľaš ty</span>. To, čo vidíš o iných, závisí od toho,
+
++          čo zdieľajú oni.
+
++        </p>
+
++      </div>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Feed</div>
+
++        <div className="mt-3 space-y-2">
+
++          {friends.map((f) => (
+
++            <div
+
++              key={f.id}
+
++              className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950"
+
++            >
+
++              <div className="flex items-center gap-3">
+
++                <div className={`h-3 w-3 rounded-full ${chipColor(f.share.invisibleToday || f.share.visibility === "hidden" ? "gray" : f.color)}`} />
+
++                <div>
+
++                  <div className="text-sm font-medium">{f.name}</div>
+
++                  <div className="text-xs text-zinc-600 dark:text-zinc-300">{renderSharedLine(f)}</div>
+
++                </div>
+
++              </div>
+
++              <div className="flex items-center gap-2">
+
++                <button
+
++                  type="button"
+
++                  onClick={() => sendPing(f.name, "🫶")}
+
++                  className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+
++                >
+
++                  🫶
+
++                </button>
+
++                <button
+
++                  type="button"
+
++                  onClick={() => sendPing(f.name, "☕")}
+
++                  className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+
++                >
+
++                  ☕
+
++                </button>
+
++                <button
+
++                  type="button"
+
++                  onClick={() => sendPing(f.name, "👀")}
+
++                  className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+
++                >
+
++                  👀
+
++                </button>
+
++              </div>
+
++            </div>
+
++          ))}
+
++        </div>
+
++        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+
++          MVP: demo feed, ale už rešpektuje „share detail“ a „invisible today“ (na sample dátach).
+
++        </p>
+
++      </div>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm font-medium">Pozvať priateľa</div>
+
++        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+
++          Skopíruj link a pošli ho človeku, ktorý ťa má rád aj bez semaforu.
+
++        </p>
+
++        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+
++          <code className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+
++            {inviteUrl}
+
++          </code>
+
++          <div className="flex gap-2">
+
++            <button
+
++              type="button"
+
++              onClick={copyInvite}
+
++              className="inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+
++            >
+
++              Kopírovať
+
++            </button>
+
++            <Link
+
++              href={`/invite/${inviteCode}`}
+
++              className="inline-flex rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+
++            >
+
++              Otvoriť
+
++            </Link>
+
++          </div>
+
++        </div>
+
++      </div>
+
++
+
++      {pings.length > 0 && (
+
++        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++          <div className="text-sm font-medium">Posledné pingy</div>
+
++          <div className="mt-3 space-y-1">
+
++            {pings.slice(0, 10).map((p, idx) => (
+
++              <div key={idx} className="text-sm text-zinc-700 dark:text-zinc-200">
+
++                <span className="mr-2">{p.kind}</span>
+
++                <span className="font-medium">{p.to}</span>
+
++                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+
++                  {new Date(p.at).toLocaleString()}
+
++                </span>
+
++              </div>
+
++            ))}
+
++          </div>
+
++        </div>
+
++      )}
+
++    </div>
+
++  );
+
++}
+
+diff --git a/src/app/invite/[code]/page.tsx b/src/app/invite/[code]/page.tsx
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/app/invite/[code]/page.tsx
+@@ -0,0 +1,41 @@
++import Link from "next/link";
+
++
+
++export default async function InvitePage({ params }: { params: { code: string } }) {
+
++  const { code } = params;
+
++
+
++  return (
+
++    <div className="space-y-4">
+
++      <h1 className="text-lg font-semibold tracking-tight">Pozvánka</h1>
+
++
+
++      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+
++        <div className="text-sm text-zinc-600 dark:text-zinc-300">
+
++          Niekto ti poslal Vioru. Buď ťa má rád, alebo sa len nudí.
+
++        </div>
+
++
+
++        <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+
++          <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Invite code</div>
+
++          <div className="mt-1 font-mono text-base tracking-tight">{code}</div>
+
++        </div>
+
++
+
++        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+
++          <Link
+
++            href="/"
+
++            className="inline-flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+
++          >
+
++            Otvoriť Vioru
+
++          </Link>
+
++          <Link
+
++            href="/friends"
+
++            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+
++          >
+
++            Priatelia
+
++          </Link>
+
++        </div>
+
++
+
++        <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+
++          MVP: samotné “prijatie pozvánky” ešte nerobíme. Zatiaľ je to len pekná stránka, aby link nepadal na 404.
+
++        </p>
+
++      </div>
+
++    </div>
+
++  );
+
++}
