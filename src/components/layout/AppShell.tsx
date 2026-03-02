@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="relative min-h-dvh overflow-x-hidden text-zinc-950 dark:text-zinc-50">
       {/* Brand background */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-cover bg-[position:50%_55%] opacity-55 saturate-150 contrast-125 dark:opacity-30"
+        className="pointer-events-none absolute inset-0 bg-[url('/brand/viora-bg.webp')] bg-contain bg-center bg-no-repeat opacity-55 saturate-150 contrast-125 dark:opacity-30"
         aria-hidden
       />
       {/* Chroma wash (keeps the background alive, without killing readability) */}
