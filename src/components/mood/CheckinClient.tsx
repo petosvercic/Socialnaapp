@@ -219,6 +219,7 @@ export function CheckinClient() {
                   setSyncNote("Uložené aj do účtu ✅");
                 }
               }
+            }
           }}
           className="space-y-4"
         >
